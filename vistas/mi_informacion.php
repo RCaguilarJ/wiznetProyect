@@ -1,5 +1,5 @@
 <?php
-
+// --- LÓGICA BACKEND ---
 
 if (!isset($conn)) {
     if (file_exists("includes/conexion.php")) require_once "includes/conexion.php";
@@ -16,11 +16,19 @@ $mensaje = "";
 $tipo_mensaje = "";
 $tab_actual = isset($_GET['tab']) ? $_GET['tab'] : 'perfil';
 
-// 1. Obtener Datos del Cliente
-// Nota: Usamos 'numero' para el campo Cédula/ID si no existe columna 'cedula'
+// 1. OBTENER DATOS DEL CLIENTE (CORREGIDO: tabla clientes, columna correo)
 $sql = "SELECT * FROM clientes WHERE id = '$id_usuario' LIMIT 1";
 $res = $conn->query($sql);
 $cliente = $res->fetch_assoc();
+
+// Mapeo seguro de datos
+$nombre_cli = $cliente['nombre'] ?? 'Cliente';
+$numero_cli = $cliente['numero'] ?? '---';
+$telefono_cli = $cliente['telefono_1'] ?? $cliente['telefono'] ?? '---';
+$direccion_cli = $cliente['direccion'] ?? '---';
+// IMPORTANTE: Aquí leemos 'correo' de la BD
+$correo_cli = $cliente['correo'] ?? 'Sin correo registrado';
+
 
 // 2. Lógica para Pestaña SERVICIO
 $plan_nombre = "Sin Plan Activo";
@@ -36,6 +44,7 @@ if($res_ord && $res_ord->num_rows > 0){
     $orden = $res_ord->fetch_assoc();
     $estatus_servicio = $orden['status'];
     $raw_nota = $orden['anotaciones'];
+    
     if(strpos($raw_nota, 'Plan Solicitado:') !== false) {
         $parts = explode(":", $raw_nota);
         $subparts = explode("\n", $parts[1]);
@@ -43,6 +52,8 @@ if($res_ord && $res_ord->num_rows > 0){
     } else {
         $plan_nombre = "Plan Personalizado";
     }
+    
+    // Simulación de datos técnicos
     $plan_velocidad = (strpos($plan_nombre, 'Básico') !== false) ? '10 Mbps' : ((strpos($plan_nombre, 'Hogar') !== false) ? '30 Mbps' : '100 Mbps');
     $plan_precio = (strpos($plan_nombre, 'Básico') !== false) ? '25.00' : ((strpos($plan_nombre, 'Hogar') !== false) ? '45.00' : '75.00');
     $fecha_instalacion = date('d/m/Y', strtotime($orden['fecha_registro']));
@@ -52,13 +63,23 @@ if($res_ord && $res_ord->num_rows > 0){
 $sql_pagos = "SELECT * FROM pagos WHERE fk_cliente = '$id_usuario' ORDER BY fecha_pago DESC LIMIT 5";
 $res_pagos = $conn->query($sql_pagos);
 
-// 3. Lógica Seguridad
+// 3. Lógica Seguridad (Cambio de contraseña)
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'update_pass') {
     $pass_nueva = $_POST['new_password'];
     $pass_conf = $_POST['confirm_password'];
+
     if ($pass_nueva === $pass_conf) {
-        $mensaje = "✅ Contraseña actualizada correctamente.";
-        $tipo_mensaje = "success";
+        // Encriptamos la contraseña antes de guardar
+        $pass_hash = password_hash($pass_nueva, PASSWORD_DEFAULT);
+        $sql_upd = "UPDATE clientes SET password = '$pass_hash' WHERE id = '$id_usuario'";
+        
+        if($conn->query($sql_upd)){
+            $mensaje = "✅ Contraseña actualizada correctamente.";
+            $tipo_mensaje = "success";
+        } else {
+             $mensaje = "Error al actualizar: " . $conn->error;
+             $tipo_mensaje = "error";
+        }
     } else {
         $mensaje = "Las contraseñas no coinciden.";
         $tipo_mensaje = "error";
@@ -85,83 +106,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     .tab-link:hover { color: #333; background: rgba(255,255,255,0.6); }
     .tab-link.active { background: white; color: #0F172A; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
-    /* Content Card General */
+    /* Cards */
     .content-card {
         background: white; border: 1px solid #e2e8f0; border-radius: 12px;
         padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    /* --- ESTILOS DE PERFIL (Réplica exacta) --- */
-    .profile-header {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 30px; 
-    }
+    /* Perfil */
+    .profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .user-ident { display: flex; gap: 20px; align-items: center; }
-    
     .avatar-circle {
-        width: 78px; height: 78px; min-width: 78px;
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        color: #1d4ed8;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 2.2rem; font-weight: 700;
-        box-shadow: 0 12px 25px rgba(37, 99, 235, 0.25);
-        overflow: hidden;
+        width: 70px; height: 70px; background: #DBEAFE; color: #2563EB;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: 700;
     }
-    .avatar-circle img {
-        width: 100%; height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-        display: block;
-    }
-    
     .user-text h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: #1e293b; font-weight: 600; }
     .user-text span { font-size: 0.9rem; color: #64748B; }
 
-    .btn-edit-outline {
-        border: 1px solid #E2E8F0; background: white; color: #334155;
-        padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
-        text-decoration: none; transition: background 0.2s;
-    }
-    .btn-edit-outline:hover { background: #F8FAFC; border-color: #CBD5E1; }
-
-    /* Grid de Datos */
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
     .full-width { grid-column: span 2; }
-    
-    .info-group label {
-        display: block; font-size: 0.85rem; font-weight: 600; color: #1e293b;
-        margin-bottom: 8px;
-    }
-    
-    /* Simulación de Input Readonly */
-    .info-display {
-        background-color: #F8FAFC; 
-        border: 1px solid #E2E8F0;
-        border-radius: 6px;
-        padding: 12px 15px;
-        font-size: 0.95rem;
-        color: #475569; 
-        width: 100%;
-        box-sizing: border-box;
-    }
+    .info-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #1e293b; margin-bottom: 8px; }
+    .info-display { background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px 15px; font-size: 0.95rem; color: #475569; width: 100%; box-sizing: border-box; }
 
-    /* --- ESTILOS PLAN --- */
+    /* Plan */
     .plan-detail-card {
         background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%);
-        color: white; border-radius: 16px; padding: 28px 32px;
-        display: flex; justify-content: space-between; align-items: center; gap: 20px;
+        color: white; border-radius: 12px; padding: 25px;
+        display: flex; justify-content: space-between; align-items: center;
         margin-bottom: 30px; position: relative; overflow: hidden;
-        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.35);
     }
     .plan-info h4 { margin: 0; font-size: 0.9rem; color: #94A3B8; letter-spacing: 1px; }
     .plan-info h2 { margin: 5px 0 10px 0; font-size: 1.8rem; }
-    .plan-meta { display: flex; gap: 18px; font-size: 0.95rem; color: #CBD5E1; }
-    .plan-status { text-align: right; }
-    .status-pill { padding: 6px 14px; border-radius: 999px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.2); color: #34D399; display: inline-flex; align-items: center; }
-    .plan-price { font-size: 1.6rem; font-weight: 600; }
-
+    .plan-meta { display: flex; gap: 15px; font-size: 0.9rem; color: #CBD5E1; }
+    .status-pill { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; background: rgba(16, 185, 129, 0.2); color: #34D399; }
+    
     /* Tabla */
+    .table-container { overflow-x: auto; }
     .styled-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     .styled-table th { text-align: left; padding: 12px; color: #64748B; border-bottom: 2px solid #F1F5F9; }
     .styled-table td { padding: 12px; border-bottom: 1px solid #F1F5F9; color: #334155; }
@@ -169,41 +149,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     .pay-Verificado { background: #DCFCE7; color: #166534; }
     .pay-Pendiente { background: #FFF7ED; color: #C2410C; }
 
-    /* Otros inputs (Seguridad) */
+    /* Formularios */
     .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
     .btn-save { background: #0F172A; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-top: 15px; }
     .alert { padding: 12px; border-radius: 6px; margin-bottom: 20px; }
     .alert-success { background: #DCFCE7; color: #166534; } .alert-error { background: #FEE2E2; color: #991B1B; }
 
-    @media(max-width: 900px) {
-        .profile-wrapper { padding: 0 15px; }
-        .plan-detail-card { flex-direction: column; align-items: flex-start; gap: 18px; }
-    }
-    @media(max-width: 600px) {
-        .info-grid { grid-template-columns: 1fr; }
-        .full-width { grid-column: span 1; }
-        .profile-header { flex-direction: column; align-items: flex-start; }
-        .plan-meta { flex-direction: column; align-items: flex-start; gap: 10px; font-size: 1rem; }
-        .plan-detail-card {
-            padding: 26px 22px 32px;
-            border-radius: 20px;
-            gap: 16px;
-            align-items: flex-start;
-            text-align: left;
-        }
-        .plan-status {
-            width: 100%;
-            text-align: left;
-        }
-        .plan-info h2 { font-size: 1.65rem; }
-        .plan-price { font-size: 1.9rem; }
-        .status-pill { font-size: 0.95rem; padding: 8px 18px; }
-        .table-container { overflow-x: auto; }
-    }
+    @media(max-width: 600px) { .info-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } .profile-header { flex-direction: column; align-items: flex-start; } }
 </style>
 
-<div class="profile-wrapper view-shell">
-
+<div class="profile-wrapper">
     <div class="page-header">
         <h2>Mi Información</h2>
         <p>Gestiona tu perfil y configuración de cuenta</p>
@@ -223,50 +178,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 <div class="user-ident">
                     <div class="avatar-circle">
                         <?php 
-                            // Lógica de Avatar Inteligente
-                            $nombre_completo = isset($cliente['nombre']) ? $cliente['nombre'] : 'U';
-                            if (preg_match('/[a-zA-ZñÑáéíóúÁÉÍÓÚ]/u', $nombre_completo, $coincidencias)) {
-                                $inicial = $coincidencias[0]; 
+                            // Avatar Inteligente
+                            if (preg_match('/[a-zA-ZñÑáéíóúÁÉÍÓÚ]/u', $nombre_cli, $coincidencias)) {
+                                echo strtoupper($coincidencias[0]); 
                             } else {
-                                $inicial = substr($nombre_completo, 0, 1);
+                                echo strtoupper(substr($nombre_cli, 0, 1));
                             }
-                            echo strtoupper($inicial); 
                         ?>
                     </div>
                     <div class="user-text">
-                        <h3><?php echo htmlspecialchars($cliente['nombre']); ?></h3>
-                        <span>Cliente desde: <?php echo isset($cliente['fecha_registro']) ? date('F Y', strtotime($cliente['fecha_registro'])) : 'Enero 2023'; ?></span>
+                        <h3><?php echo htmlspecialchars($nombre_cli); ?></h3>
+                        <span>Cliente desde: <?php echo isset($cliente['fecha_registro']) ? date('F Y', strtotime($cliente['fecha_registro'])) : '---'; ?></span>
                     </div>
                 </div>
-                <a href="#" class="btn-edit-outline">Editar</a>
             </div>
 
             <h4 style="margin: 0 0 20px 0; color: #333; font-weight: 500;">Información Personal</h4>
-
             <div class="info-grid">
                 <div class="info-group">
-                    <label>Nombre Completo *</label>
-                    <div class="info-display"><?php echo htmlspecialchars($cliente['nombre']); ?></div>
+                    <label>Nombre Completo</label>
+                    <div class="info-display"><?php echo htmlspecialchars($nombre_cli); ?></div>
                 </div>
                 <div class="info-group">
-                    <label>Cédula</label>
-                    <div class="info-display"><?php echo htmlspecialchars($cliente['numero'] ?? '---'); ?></div>
-                </div>
-
-                <div class="info-group">
-                    <label>Correo Electrónico *</label>
-                    <div class="info-display">
-                        <?php echo !empty($cliente['email']) ? htmlspecialchars($cliente['email']) : 'No registrado'; ?>
-                    </div>
+                    <label>Número de Cliente</label>
+                    <div class="info-display"><?php echo htmlspecialchars($numero_cli); ?></div>
                 </div>
                 <div class="info-group">
-                    <label>Teléfono *</label>
-                    <div class="info-display"><?php echo htmlspecialchars($cliente['telefono_1']); ?></div>
+                    <label>Correo Electrónico</label>
+                    <div class="info-display"><?php echo htmlspecialchars($correo_cli); ?></div>
                 </div>
-
+                <div class="info-group">
+                    <label>Teléfono</label>
+                    <div class="info-display"><?php echo htmlspecialchars($telefono_cli); ?></div>
+                </div>
                 <div class="info-group full-width">
                     <label>Dirección de Servicio</label>
-                    <div class="info-display"><?php echo htmlspecialchars($cliente['direccion']); ?></div>
+                    <div class="info-display"><?php echo htmlspecialchars($direccion_cli); ?></div>
                 </div>
             </div>
 
@@ -294,9 +241,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
             <div class="table-container">
                 <table class="styled-table">
-                    <thead>
-                        <tr><th>Fecha</th><th>Monto</th><th>Método</th><th>Referencia</th><th>Estatus</th></tr>
-                    </thead>
+                    <thead><tr><th>Fecha</th><th>Monto</th><th>Método</th><th>Referencia</th><th>Estatus</th></tr></thead>
                     <tbody>
                         <?php if ($res_pagos && $res_pagos->num_rows > 0): ?>
                             <?php while($pago = $res_pagos->fetch_assoc()): ?>
@@ -337,6 +282,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             <h3 style="margin-top:0;">Preferencias</h3>
             <p style="color:#64748B;">Configura cómo quieres recibir nuestras alertas.</p>
         <?php endif; ?>
-
     </div>
 </div>

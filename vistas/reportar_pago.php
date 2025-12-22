@@ -1,13 +1,11 @@
 <?php
+// --- LÓGICA BACKEND ---
 
-
-// 1. Conexión y Sesión
 if (!isset($conn)) {
     if (file_exists("includes/conexion.php")) require_once "includes/conexion.php";
     elseif (file_exists("../includes/conexion.php")) require_once "../includes/conexion.php";
 }
 
-// Verificar que el usuario esté logueado
 if (!isset($_SESSION['usuario_id'])) {
     echo "<script>window.location.href='index.php';</script>";
     exit;
@@ -15,20 +13,17 @@ if (!isset($_SESSION['usuario_id'])) {
 
 $id_usuario = $_SESSION['usuario_id'];
 $mensaje = "";
-$tipo_mensaje = ""; // 'success' o 'error'
+$tipo_mensaje = "";
 
-// 2. Obtener datos del cliente para pre-llenar el formulario
-// (Buscamos su nombre y número de contrato)
+// 1. Obtener datos del cliente (CORREGIDO: tabla clientes)
 $sql_cliente = "SELECT nombre, numero FROM clientes WHERE id = '$id_usuario' LIMIT 1";
-// Nota: Si usas tabla 'usuarios', cambia 'clientes' por 'usuarios'
 $res_cliente = $conn->query($sql_cliente);
 $datos_cliente = ($res_cliente && $res_cliente->num_rows > 0) ? $res_cliente->fetch_assoc() : ['nombre'=>'Usuario', 'numero'=>'---'];
 
 
-// 3. PROCESAR EL FORMULARIO
+// 2. PROCESAR EL FORMULARIO
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // Recibir datos de texto
     $monto = $conn->real_escape_string($_POST['monto']);
     $fecha = $conn->real_escape_string($_POST['fecha']);
     $metodo = $conn->real_escape_string($_POST['metodo']);
@@ -36,38 +31,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $banco = $conn->real_escape_string($_POST['banco']);
     $comentarios = $conn->real_escape_string($_POST['comentarios']);
 
-    // Procesar ARCHIVO (Comprobante)
     $ruta_final = "";
     
     if (isset($_FILES['comprobante']) && $_FILES['comprobante']['error'] == 0) {
-        
         $nombre_archivo = $_FILES['comprobante']['name'];
         $tipo_archivo = $_FILES['comprobante']['type'];
         $tmp_name = $_FILES['comprobante']['tmp_name'];
         
-        // Validar extensiones permitidas
         $permitidos = array("image/jpg", "image/jpeg", "image/png", "application/pdf");
         
         if (in_array($tipo_archivo, $permitidos)) {
-            // Crear nombre único para evitar sobrescribir (ID_TIMESTAMP_NOMBRE)
             $nombre_nuevo = $id_usuario . "_" . time() . "_" . $nombre_archivo;
-            
-            // Ruta donde se guardará (Asegúrate de crear la carpeta uploads/comprobantes)
             $carpeta_destino = "uploads/comprobantes/";
-            if (!file_exists($carpeta_destino)) {
-                mkdir($carpeta_destino, 0777, true); // Crear carpeta si no existe
-            }
+            if (!file_exists($carpeta_destino)) { mkdir($carpeta_destino, 0777, true); }
             
             $ruta_final = $carpeta_destino . $nombre_nuevo;
 
             if (move_uploaded_file($tmp_name, $ruta_final)) {
-                // Archivo subido correctamente
+                // Éxito al subir
             } else {
                 $mensaje = "Error al subir el archivo al servidor.";
                 $tipo_mensaje = "error";
             }
         } else {
-            $mensaje = "Formato de archivo no permitido. Use JPG, PNG o PDF.";
+            $mensaje = "Formato no permitido. Use JPG, PNG o PDF.";
             $tipo_mensaje = "error";
         }
     } else {
@@ -75,16 +62,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $tipo_mensaje = "error";
     }
 
-    // SI NO HUBO ERROR CON EL ARCHIVO, GUARDAMOS EN BD
     if (empty($mensaje)) {
         $sql_insert = "INSERT INTO pagos (fk_cliente, monto, fecha_pago, metodo_pago, referencia, banco_origen, comprobante_url, comentarios, status) 
                        VALUES ('$id_usuario', '$monto', '$fecha', '$metodo', '$referencia', '$banco', '$ruta_final', '$comentarios', 'Pendiente')";
 
         if ($conn->query($sql_insert) === TRUE) {
-            $mensaje = "Su reporte de pago ha sido enviado correctamente. Lo verificaremos pronto.";
+            $mensaje = "✅ Reporte enviado correctamente.";
             $tipo_mensaje = "success";
         } else {
-            $mensaje = "Error en la base de datos: " . $conn->error;
+            $mensaje = "Error DB: " . $conn->error;
             $tipo_mensaje = "error";
         }
     }
@@ -95,53 +81,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     .report-wrapper { max-width: 800px; margin: 0 auto; }
     .page-header { margin-bottom: 25px; }
     .page-header h2 { margin: 0 0 5px 0; color: #1e293b; }
-    .page-header p { margin: 0; color: #64748B; font-size: 0.95rem; }
-
     .card-box { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-
-    .instructions-title { font-size: 1rem; font-weight: 500; color: #333; margin-top: 0; margin-bottom: 15px; }
-    .instructions-list { margin: 0; padding-left: 20px; color: #475569; font-size: 0.9rem; line-height: 1.6; }
-    
-    .form-title { font-size: 1rem; font-weight: 500; color: #333; margin-top: 0; margin-bottom: 25px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .full-width { grid-column: span 2; }
-
-    .form-group { display: flex; flex-direction: column; }
+    .form-group { display: flex; flex-direction: column; margin-bottom:15px; }
     .form-group label { font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-bottom: 8px; }
-    .form-control { background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 0.9rem; color: #334155; width: 100%; box-sizing: border-box; }
-    .form-control:focus { outline: none; border-color: #3B82F6; background-color: white; }
-    
-    .file-upload-area { border: 2px dashed #CBD5E1; border-radius: 8px; padding: 30px; text-align: center; background-color: #F8FAFC; cursor: pointer; transition: border-color 0.2s; margin-bottom: 20px; position: relative; }
-    .file-upload-area:hover { border-color: #3B82F6; background-color: #EFF6FF; }
-    .upload-icon { font-size: 1.5rem; color: #94A3B8; margin-bottom: 10px; display: block; }
-    .upload-text { font-size: 0.9rem; color: #475569; font-weight: 500; margin-bottom: 5px; display: block; }
-    .upload-hint { font-size: 0.75rem; color: #94A3B8; display: block; }
-    .file-input-hidden { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-
-    .btn-row { display: flex; gap: 15px; margin-top: 20px; }
-    .btn-submit { background-color: #0F172A; color: white; border: none; border-radius: 6px; padding: 12px; font-weight: 600; flex: 1; cursor: pointer; }
-    .btn-submit:hover { background-color: #1e293b; }
-    .btn-reset { background-color: white; border: 1px solid #E2E8F0; color: #333; border-radius: 6px; padding: 12px 20px; font-weight: 600; cursor: pointer; }
-    .btn-reset:hover { background-color: #F1F5F9; }
-
-    /* Alert Boxes */
-    .alert { padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid transparent; }
-    .alert-success { background-color: #DCFCE7; color: #166534; border-color: #BBF7D0; }
-    .alert-error { background-color: #FEE2E2; color: #991B1B; border-color: #FECACA; }
-
-    @media (max-width: 900px) {
-        .report-wrapper { padding: 0 15px; }
-        .card-box { padding: 20px; }
-    }
-    @media (max-width: 600px) {
-        .form-grid { grid-template-columns: 1fr; }
-        .full-width { grid-column: span 1; }
-        .btn-row { flex-direction: column; }
-    }
+    .form-control { background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px; width: 100%; box-sizing: border-box; }
+    .btn-submit { background-color: #0F172A; color: white; border: none; border-radius: 6px; padding: 12px; width:100%; cursor: pointer; }
+    .alert { padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9rem; }
+    .alert-success { background-color: #DCFCE7; color: #166534; } .alert-error { background-color: #FEE2E2; color: #991B1B; }
+    .file-upload-area { border: 2px dashed #CBD5E1; padding: 20px; text-align: center; cursor: pointer; background: #F8FAFC; border-radius: 8px; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
 </style>
 
-<div class="report-wrapper view-shell">
-
+<div class="report-wrapper">
     <div class="page-header">
         <h2>Reportar Pago</h2>
         <p>Complete el formulario para reportar su pago</p>
@@ -154,19 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php endif; ?>
 
     <div class="card-box">
-        <h3 class="instructions-title">Instrucciones</h3>
-        <ul class="instructions-list">
-            <li>Adjunte una foto o escaneo del comprobante de pago.</li>
-            <li>Su pago será verificado en un plazo de 24 horas hábiles.</li>
-            <li>Asegúrese de que la imagen sea legible.</li>
-        </ul>
-    </div>
-
-    <div class="card-box">
-        <h3 class="form-title">Información del Pago</h3>
-
         <form action="" method="POST" enctype="multipart/form-data">
-            
             <div class="form-grid">
                 
                 <div class="form-group">
@@ -209,44 +150,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="form-group full-width">
                     <label>Comprobante de Pago *</label>
-                    
-                    <div class="file-upload-area" id="drop-area">
-                        <input type="file" name="comprobante" class="file-input-hidden" id="comprobante" accept=".jpg,.jpeg,.png,.pdf" required>
-                        
-                        <i class="fa-solid fa-arrow-up-from-bracket upload-icon"></i>
-                        <span class="upload-text">Haga clic para seleccionar un archivo</span>
-                        <span class="upload-hint">PNG, JPG o PDF (máx. 5MB)</span>
+                    <div class="file-upload-area" onclick="document.getElementById('comprobante').click()">
+                        <input type="file" name="comprobante" id="comprobante" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" required>
+                        <span id="file-text">Haga clic para seleccionar archivo (JPG, PNG, PDF)</span>
                     </div>
-                    <div id="file-name" style="font-size: 0.8rem; color: #2563EB; margin-top: 5px; display: none; font-weight: 600;"></div>
                 </div>
 
                 <div class="form-group full-width">
-                    <label>Comentarios Adicionales</label>
-                    <textarea name="comentarios" class="form-control" rows="3" placeholder="Información adicional sobre el pago"></textarea>
+                    <label>Comentarios</label>
+                    <textarea name="comentarios" class="form-control" rows="3"></textarea>
                 </div>
-
             </div>
 
-            <div class="btn-row">
-                <button type="submit" class="btn-submit">Enviar Reporte</button>
-                <button type="reset" class="btn-reset" onclick="document.getElementById('file-name').style.display='none'">Limpiar</button>
-            </div>
-
+            <button type="submit" class="btn-submit" style="margin-top:20px;">Enviar Reporte</button>
         </form>
     </div>
 </div>
 
 <script>
-    const fileInput = document.getElementById('comprobante');
-    const fileNameDisplay = document.getElementById('file-name');
-    const dropArea = document.getElementById('drop-area');
-
-    fileInput.addEventListener('change', function() {
+    document.getElementById('comprobante').addEventListener('change', function() {
         if (this.files && this.files[0]) {
-            fileNameDisplay.textContent = 'Archivo seleccionado: ' + this.files[0].name;
-            fileNameDisplay.style.display = 'block';
-            dropArea.style.borderColor = '#2563EB';
-            dropArea.style.backgroundColor = '#EFF6FF';
+            document.getElementById('file-text').textContent = 'Archivo seleccionado: ' + this.files[0].name;
+            document.querySelector('.file-upload-area').style.borderColor = '#2563EB';
+            document.querySelector('.file-upload-area').style.backgroundColor = '#EFF6FF';
         }
     });
 </script>

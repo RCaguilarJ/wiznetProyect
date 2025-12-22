@@ -6,39 +6,43 @@ $mensaje_error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    $correo = $conn->real_escape_string($_POST['email']);
+    // Recibimos el dato del formulario (el 'name' en el HTML sigue siendo 'email')
+    $correo_ingresado = $conn->real_escape_string($_POST['email']);
     $password_ingresado = $_POST['password'];
 
-    
+    // =========================================================
+    // CONFIGURACIÓN DE PRODUCCIÓN (CORREGIDA)
+    // =========================================================
     $tabla_clientes = "clientes"; 
     
-    
+    // Nombres exactos de las columnas en tu base de datos REAL:
     $col_id       = "id";
-    $col_email    = "email";     
-    $col_password = "password";  
+    $col_email    = "correo";    // <--- CORREGIDO: En tu BD se llama 'correo'
+    $col_password = "password";  // En tu BD se llama 'password'
     $col_nombre   = "nombre";   
+    // =========================================================
 
-    // 1. Buscamos al usuario
-    $sql = "SELECT * FROM $tabla_clientes WHERE $col_email = '$correo' LIMIT 1";
+    // 1. Buscamos al usuario usando la columna 'correo'
+    $sql = "SELECT * FROM $tabla_clientes WHERE $col_email = '$correo_ingresado' LIMIT 1";
     
-    // Ejecutamos la consulta
     $resultado = $conn->query($sql);
     
     if (!$resultado) {
-        // Si hay un error SQL (ej. tabla no existe), lo mostramos para depurar
         $mensaje_error = "Error Técnico: " . $conn->error;
-    }
+    } 
     elseif ($resultado->num_rows > 0) {
         
         $datos_usuario = $resultado->fetch_assoc();
         
         // 2. Verificar Contraseña
-        if (isset($datos_usuario[$col_password])) {
+        // Nota: En tu base de datos, muchos clientes tienen el password como NULL.
+        // Debes asegurarte de que el cliente con el que pruebas tenga contraseña asignada.
+        if (!empty($datos_usuario[$col_password])) {
             
             $password_db = $datos_usuario[$col_password];
             $login_exitoso = false;
 
-            // Probamos los métodos de contraseña
+            // Probamos los 3 métodos de encriptación
             if (password_verify($password_ingresado, $password_db)) {
                 $login_exitoso = true;
             } elseif (md5($password_ingresado) === $password_db) {
@@ -52,7 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['usuario_id'] = $datos_usuario[$col_id];
                 $_SESSION['nombre'] = $datos_usuario[$col_nombre];
                 
-                // Redirigir al Dashboard
+                // Guardamos el correo en sesión también
+                $_SESSION['email'] = $datos_usuario[$col_email];
+
                 header("Location: dashboard.php");
                 exit();
 
@@ -61,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
         } else {
-            $mensaje_error = "Error de configuración: La columna de contraseña no existe.";
+            $mensaje_error = "Este usuario no tiene una contraseña configurada. Contacte a soporte.";
         }
 
     } else {
@@ -105,6 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label>Contraseña</label>
                     <div style="position:relative;">
                         <input type="password" name="password" class="form-control" placeholder="........" required>
+                        <i class="fa-regular fa-eye" style="position:absolute; right:15px; top:12px; color:#999; cursor:pointer;"></i>
                     </div>
                 </div>
 
