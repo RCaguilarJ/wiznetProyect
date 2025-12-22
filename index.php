@@ -1,65 +1,71 @@
 <?php
 // archivo: index.php
-// 1. Incluimos la conexión a la base de datos
 require_once "includes/conexion.php";
 
-// Variable para errores
 $mensaje_error = "";
 
-// 2. Si se envió el formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // Limpieza básica
     $correo = $conn->real_escape_string($_POST['email']);
     $password_ingresado = $_POST['password'];
 
-    // 3. Consulta SQL
-    $sql = "SELECT * FROM usuarios WHERE email = '$correo' LIMIT 1";
+    
+    $tabla_clientes = "clientes"; 
+    
+    
+    $col_id       = "id";
+    $col_email    = "email";     
+    $col_password = "password";  
+    $col_nombre   = "nombre";   
+
+    // 1. Buscamos al usuario
+    $sql = "SELECT * FROM $tabla_clientes WHERE $col_email = '$correo' LIMIT 1";
+    
+    // Ejecutamos la consulta
     $resultado = $conn->query($sql);
-
-    // 4. Verificar si el usuario existe
-    if ($resultado && $resultado->num_rows > 0) {
+    
+    if (!$resultado) {
+        // Si hay un error SQL (ej. tabla no existe), lo mostramos para depurar
+        $mensaje_error = "Error Técnico: " . $conn->error;
+    }
+    elseif ($resultado->num_rows > 0) {
         
-        // Obtenemos los datos del usuario
-        $usuario_db = $resultado->fetch_assoc();
-        $password_db = $usuario_db['password']; // La contraseña guardada en la BD
-
+        $datos_usuario = $resultado->fetch_assoc();
         
-        // Esto probará los 3 métodos posibles automáticamente
-        $login_exitoso = false;
-
-        
-        if (password_verify($password_ingresado, $password_db)) {
-            $login_exitoso = true;
-        } 
-        
-        elseif (md5($password_ingresado) === $password_db) {
-            $login_exitoso = true;
-        } 
-        
-        elseif ($password_ingresado === $password_db) {
-            $login_exitoso = true;
-        }
-
-        
-        if ($login_exitoso) {
+        // 2. Verificar Contraseña
+        if (isset($datos_usuario[$col_password])) {
             
-            $_SESSION['usuario_id'] = $usuario_db['id'];
-            $_SESSION['nombre'] = $usuario_db['nombre'];
-            
-            if(isset($usuario_db['rol'])) {
-                $_SESSION['rol'] = $usuario_db['rol'];
+            $password_db = $datos_usuario[$col_password];
+            $login_exitoso = false;
+
+            // Probamos los métodos de contraseña
+            if (password_verify($password_ingresado, $password_db)) {
+                $login_exitoso = true;
+            } elseif (md5($password_ingresado) === $password_db) {
+                $login_exitoso = true;
+            } elseif ($password_ingresado === $password_db) {
+                $login_exitoso = true;
             }
 
-            // Redirección al Dashboard
-            header("Location: dashboard.php");
-            exit();
+            if ($login_exitoso) {
+                // 3. Login Correcto
+                $_SESSION['usuario_id'] = $datos_usuario[$col_id];
+                $_SESSION['nombre'] = $datos_usuario[$col_nombre];
+                
+                // Redirigir al Dashboard
+                header("Location: dashboard.php");
+                exit();
+
+            } else {
+                $mensaje_error = "La contraseña es incorrecta.";
+            }
+
         } else {
-            $mensaje_error = "La contraseña es incorrecta.";
+            $mensaje_error = "Error de configuración: La columna de contraseña no existe.";
         }
 
     } else {
-        $mensaje_error = "No existe una cuenta con el correo: " . htmlspecialchars($correo);
+        $mensaje_error = "No existe una cuenta registrada con este correo.";
     }
 }
 ?>
@@ -73,41 +79,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     <div class="login-wrapper">
         <div class="login-card">
-            <img src="assets/img/logo.png" alt="Wiznet" class="login-logo">
+            <img src="assets/img/logo.png" alt="Wiznet" class="login-logo" style="max-width: 150px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
+            
             <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; display:flex; align-items:center; justify-content:center; gap:10px;">
-                <i class="fa-solid fa-circle-nodes" style="color: #3B82F6;"></i> 
+                <i class="fa-solid fa-circle-nodes" style="color: #3B82F6;"></i> WIZNET
             </div>
             
-            <p style="color: #64748B; font-size: 0.9rem; margin-bottom: 30px;">Inicia sesión en tu cuenta</p>
+            <p style="color: #64748B; font-size: 0.9rem; margin-bottom: 30px; text-align: center;">Acceso a Clientes</p>
+
             <?php if(!empty($mensaje_error)): ?>
-                <div style="background:#fee2e2; color:#dc2626; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem; text-align: left;">
+                <div style="background:#fee2e2; color:#dc2626; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;">
                     <i class="fa-solid fa-circle-exclamation"></i> <?php echo $mensaje_error; ?>
                 </div>
             <?php endif; ?>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
             <form action="index.php" method="POST"> 
-                
                 <div class="input-group">
                     <label>Correo Electrónico</label>
-                    <input type="email" name="email" class="form-control" placeholder="tu@email.com" required>
+                    <input type="email" name="email" class="form-control" placeholder="cliente@email.com" required>
                 </div>
 
                 <div class="input-group">
                     <label>Contraseña</label>
                     <div style="position:relative;">
                         <input type="password" name="password" class="form-control" placeholder="........" required>
-                        <i class="fa-regular fa-eye" style="position:absolute; right:15px; top:12px; color:#999; cursor:pointer;"></i>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                <button type="submit" class="btn-primary">Ingresar</button>
             </form>
-            
         </div>
     </div>
-
 </body>
 </html>

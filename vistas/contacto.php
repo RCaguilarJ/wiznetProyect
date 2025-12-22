@@ -171,11 +171,11 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Nombre Completo *</label>
-                    <input type="text" class="form-control" placeholder="Juan Pérez" value="Juan Pérez">
+                    <input type="text" class="form-control" placeholder="" value="">
                 </div>
                 <div class="form-group">
                     <label>Correo Electrónico *</label>
-                    <input type="email" class="form-control" placeholder="juan@ejemplo.com" value="juan@ejemplo.com">
+                    <input type="email" class="form-control" placeholder="" value="">
                 </div>
 
                 <div class="form-group">
