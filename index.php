@@ -6,59 +6,51 @@ $mensaje_error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // Recibimos el dato del formulario (el 'name' en el HTML sigue siendo 'email')
+    // Limpiamos los datos de entrada
     $correo_ingresado = $conn->real_escape_string($_POST['email']);
     $password_ingresado = $_POST['password'];
 
     // =========================================================
-    // CONFIGURACIÓN DE PRODUCCIÓN (CORREGIDA)
+    // CONFIGURACIÓN DE TABLAS (PRODUCCIÓN)
     // =========================================================
-    $tabla_clientes = "clientes"; 
+    // Tabla: 'clientes'
+    // Columna usuario: 'correo' (Confirmado en tu SQL)
+    // Columna clave: 'password'
     
-    // Nombres exactos de las columnas en tu base de datos REAL:
-    $col_id       = "id";
-    $col_email    = "correo";    // <--- CORREGIDO: En tu BD se llama 'correo'
-    $col_password = "password";  // En tu BD se llama 'password'
-    $col_nombre   = "nombre";   
-    // =========================================================
-
-    // 1. Buscamos al usuario usando la columna 'correo'
-    $sql = "SELECT * FROM $tabla_clientes WHERE $col_email = '$correo_ingresado' LIMIT 1";
-    
+    $sql = "SELECT * FROM clientes WHERE correo = '$correo_ingresado' LIMIT 1";
     $resultado = $conn->query($sql);
     
-    if (!$resultado) {
-        $mensaje_error = "Error Técnico: " . $conn->error;
-    } 
-    elseif ($resultado->num_rows > 0) {
+    if ($resultado && $resultado->num_rows > 0) {
         
         $datos_usuario = $resultado->fetch_assoc();
         
-        // 2. Verificar Contraseña
-        // Nota: En tu base de datos, muchos clientes tienen el password como NULL.
-        // Debes asegurarte de que el cliente con el que pruebas tenga contraseña asignada.
-        if (!empty($datos_usuario[$col_password])) {
+        // Verificamos que el usuario tenga contraseña configurada
+        if (!empty($datos_usuario['password'])) {
             
-            $password_db = $datos_usuario[$col_password];
+            $password_db = $datos_usuario['password'];
             $login_exitoso = false;
 
-            // Probamos los 3 métodos de encriptación
+            // --- VALIDACIÓN DE CONTRASEÑA (3 MÉTODOS) ---
+            // 1. Password Hash (Lo ideal)
             if (password_verify($password_ingresado, $password_db)) {
                 $login_exitoso = true;
-            } elseif (md5($password_ingresado) === $password_db) {
+            } 
+            // 2. MD5 (Sistemas legacy)
+            elseif (md5($password_ingresado) === $password_db) {
                 $login_exitoso = true;
-            } elseif ($password_ingresado === $password_db) {
+            } 
+            // 3. Texto Plano (Sin seguridad)
+            elseif ($password_ingresado === $password_db) {
                 $login_exitoso = true;
             }
 
             if ($login_exitoso) {
-                // 3. Login Correcto
-                $_SESSION['usuario_id'] = $datos_usuario[$col_id];
-                $_SESSION['nombre'] = $datos_usuario[$col_nombre];
+                // --- LOGIN CORRECTO ---
+                $_SESSION['usuario_id'] = $datos_usuario['id'];
+                $_SESSION['nombre'] = $datos_usuario['nombre'];
+                $_SESSION['email'] = $datos_usuario['correo']; // Guardamos el correo real
                 
-                // Guardamos el correo en sesión también
-                $_SESSION['email'] = $datos_usuario[$col_email];
-
+                // Redirigir al Dashboard
                 header("Location: dashboard.php");
                 exit();
 
@@ -67,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
         } else {
-            $mensaje_error = "Este usuario no tiene una contraseña configurada. Contacte a soporte.";
+            $mensaje_error = "Este usuario no tiene una contraseña configurada.";
         }
 
     } else {
