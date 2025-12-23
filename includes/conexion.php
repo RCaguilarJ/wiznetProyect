@@ -1,39 +1,61 @@
 <?php
 // archivo: includes/conexion.php
 
-$config = require __DIR__ . "/../config.php";
-$db = $config["db"];
+// ====================================================
+// 1. CONFIGURACIÓN DEL ENTORNO
+// ====================================================
 
-$conn = mysqli_init();
-$client_flags = 0;
+// PON ESTO EN 'true' PARA TRABAJAR EN TU PC (WAMP)
+// PON ESTO EN 'false' CUANDO LO SUBAS AL SERVIDOR
+$modo_local = true; 
 
-if (!empty($db["ssl_ca"])) {
-    $conn->ssl_set(
-        $db["ssl_key"],
-        $db["ssl_cert"],
-        $db["ssl_ca"],
-        null,
-        null
-    );
-    $client_flags |= MYSQLI_CLIENT_SSL;
+
+if ($modo_local) {
+    // 🏠 DATOS PARA TU PC (WAMP)
+    $host = "localhost";
+    $user = "root";
+    $password = ""; 
+    
+    // ⚠️ IMPORTANTE: Si en tu phpMyAdmin local tu base se llama "wiznet",
+    // cambia la línea de abajo por: $database = "wiznet";
+    $database = "wiznet"; 
+
+} else {
+    // ☁️ DATOS PARA EL SERVIDOR (PRODUCCIÓN)
+    $host = "localhost"; 
+    $user = "wiznet_wiznet";
+    $password = 'YI13$~PNk@#z'; 
+    $database = "wiznet_wiznet";
 }
 
-$conn->real_connect(
-    $db["host"],
-    $db["user"],
-    $db["pass"],
-    $db["name"],
-    $db["port"],
-    null,
-    $client_flags
-);
+// ====================================================
+// 2. CREAR LA CONEXIÓN
+// ====================================================
+// Usamos el @ para suprimir el error visual feo de PHP y manejarlo nosotros abajo
+$conn = @new mysqli($host, $user, $password, $database);
 
+// ====================================================
+// 3. VERIFICAR ERRORES
+// ====================================================
 if ($conn->connect_error) {
-    die("Error de conexion al sistema.");
+    if ($modo_local) {
+        // Mensaje detallado solo para ti en local
+        die("<h1>❌ Error de Conexión Local (WAMP)</h1>
+             <p><b>Error:</b> " . $conn->connect_error . "</p>
+             <p><b>Revisa:</b><br>
+             1. Que WAMP esté en verde.<br>
+             2. Que la base de datos <b>'$database'</b> exista en phpMyAdmin.<br>
+             3. Que el usuario sea 'root' y sin contraseña.</p>");
+    } else {
+        // Mensaje seguro para producción
+        die("Error de conexión al sistema. Intente más tarde.");
+    }
 }
 
-$conn->set_charset($db["charset"]);
+// Configurar caracteres especiales (tildes, ñ)
+$conn->set_charset("utf8");
 
+// Iniciar sesión si no está iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

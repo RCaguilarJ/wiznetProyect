@@ -22,11 +22,12 @@ $sql = "SELECT * FROM clientes WHERE id = '$id_usuario' LIMIT 1";
 $res = $conn->query($sql);
 $cliente = $res->fetch_assoc();
 
-// Mapeo seguro de datos (usando 'correo' como en tu BD)
+// Mapeo seguro de datos (usando 'correo' como en tu BD real)
 $nombre_cli = $cliente['nombre'] ?? 'Cliente';
 $numero_cli = $cliente['numero'] ?? '---';
 $telefono_cli = $cliente['telefono_1'] ?? $cliente['telefono'] ?? '---';
 $direccion_cli = $cliente['direccion'] ?? '---';
+// IMPORTANTE: Leemos 'correo'
 $correo_cli = $cliente['correo'] ?? 'Sin correo registrado';
 
 
@@ -75,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         $pass_hash = password_hash($pass_nueva, PASSWORD_DEFAULT);
         
         // Ejecutamos el UPDATE en la base de datos
-        // Asegúrate de que la columna se llame 'password' en tu BD (como vimos en el SQL)
+        // La columna en tu BD es 'password'
         $sql_upd = "UPDATE clientes SET password = '$pass_hash' WHERE id = '$id_usuario'";
         
         if($conn->query($sql_upd)){
