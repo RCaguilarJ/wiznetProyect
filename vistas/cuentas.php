@@ -1,270 +1,244 @@
 <style>
-    /* Estilos específicos para esta vista */
-    .bank-card {
+    .accounts-wrapper { max-width: 1000px; margin: 0 auto; }
+    
+    .page-header { text-align: center; margin-bottom: 40px; }
+    .page-header h2 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.8rem; }
+    .page-header p { color: #64748B; margin: 0; }
+    
+    .alert-box {
+        background-color: #FEF2F2;
+        border: 1px solid #FECACA;
+        color: #991B1B;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+    .alert-box strong { font-weight: 700; }
+
+    /* Grid de Cuentas */
+    .accounts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+
+    /* Tarjeta de Cuenta */
+    .account-card {
         background: white;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 20px;
-        transition: box-shadow 0.2s;
+        padding: 25px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+        overflow: hidden;
     }
-    .bank-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    .account-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+        border-color: #cbd5e1;
     }
     
-    /* Header de la tarjeta (Icono + Nombres) */
-    .bank-header {
+    /* Borde superior de color por tipo */
+    .border-bbva { border-top: 4px solid #004481; }
+    .border-oxxo { border-top: 4px solid #EAB308; } /* Amarillo Oxxo */
+    .border-azteca { border-top: 4px solid #10B981; } /* Verde */
+    .border-santander { border-top: 4px solid #EC0000; } /* Rojo */
+    .border-spei { border-top: 4px solid #6366F1; } /* Morado SPEI */
+
+    .acc-header {
         display: flex;
         align-items: center;
         gap: 15px;
-        margin-bottom: 25px;
+        margin-bottom: 15px;
     }
-    .bank-icon-box {
-        width: 48px;
-        height: 48px;
-        background-color: #DBEAFE; /* Azul muy claro */
-        color: #2563EB; /* Azul fuerte */
-        border-radius: 10px;
+    .acc-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.2rem;
+        background: #F1F5F9;
+        color: #475569;
     }
-    .bank-title h3 {
-        margin: 0;
-        font-size: 1rem;
-        color: #1e293b;
-    }
-    .bank-title span {
-        font-size: 0.85rem;
-        color: #64748B;
-    }
+    .acc-title h3 { margin: 0; font-size: 1.1rem; color: #1e293b; }
+    .acc-title span { font-size: 0.8rem; color: #64748B; font-weight: 500; }
 
-    /* Detalles de la cuenta */
-    .account-detail {
+    .acc-number-box {
+        background-color: #F8FAFC;
+        border: 1px dashed #CBD5E1;
+        padding: 12px;
+        border-radius: 6px;
+        text-align: center;
         margin-bottom: 15px;
     }
-    .detail-label {
+    .acc-number {
+        font-family: monospace;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+        letter-spacing: 1px;
+    }
+    .acc-label {
         display: block;
         font-size: 0.75rem;
-        color: #64748B;
-        margin-bottom: 4px;
-    }
-    .detail-value {
-        font-size: 1rem;
-        color: #0f172a;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .account-number {
-        font-variant-numeric: tabular-nums;
-        letter-spacing: 0.5px;
-    }
-    .copy-btn {
-        cursor: pointer;
-        color: #64748B;
-        transition: color 0.2s;
-    }
-    .copy-btn:hover {
-        color: #2563EB;
-    }
-    .copy-btn.copied {
-        color: #2563EB;
-    }
-    .copy-toast {
-        position: fixed;
-        bottom: 25px;
-        left: 50%;
-        transform: translateX(-50%) translateY(20px);
-        background: #0F172A;
-        color: #fff;
-        padding: 12px 18px;
-        border-radius: 999px;
-        font-size: 0.9rem;
-        box-shadow: 0 10px 25px rgba(15,23,42,0.25);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        z-index: 9999;
-    }
-    .copy-toast.visible {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        color: #94A3B8;
+        margin-bottom: 5px;
+        text-transform: uppercase;
     }
 
-    /* Cuadro de instrucciones inferior */
-    .info-box {
-        background-color: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-radius: 8px;
-        padding: 20px;
-        color: #1E40AF;
-    }
-    .info-box h4 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 0.95rem;
-    }
-    .info-box ul {
-        margin: 0;
-        padding-left: 20px;
+    .acc-owner {
         font-size: 0.85rem;
-        line-height: 1.6;
+        color: #475569;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 10px;
     }
-    @media (max-width: 900px) {
-        .bank-card { padding: 20px; }
+    .acc-owner strong { color: #1e293b; }
+
+    .whatsapp-btn {
+        display: block;
+        background-color: #25D366;
+        color: white;
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 40px;
+        transition: background 0.2s;
     }
-    @media (max-width: 600px) {
-        .bank-header { flex-direction: column; align-items: flex-start; }
-        .detail-value { flex-wrap: wrap; }
-        .info-box { padding: 15px; }
-    }
+    .whatsapp-btn:hover { background-color: #1ebc57; }
 </style>
 
-<div class="bank-wrapper view-shell">
+<div class="accounts-wrapper view-shell">
 
-<div style="margin-bottom: 30px;">
-    <h2 style="margin: 0; font-size: 1.5rem;">Cuentas Bancarias</h2>
-    <p style="color: #64748B; margin-top: 5px;">Información de las cuentas bancarias para realizar pagos</p>
+    <div class="page-header">
+        <h2>Cuentas Bancarias</h2>
+        <p>Realice sus pagos de forma segura en las siguientes cuentas</p>
+    </div>
+
+    <div class="alert-box">
+        <i class="fa-solid fa-triangle-exclamation"></i> <strong>IMPORTANTE:</strong><br>
+        En transferencias, agregue su <strong># DE CLIENTE</strong> en el Concepto de Pago.<br>
+        En depósitos en efectivo, escriba sus datos en el comprobante (ticket).
+    </div>
+
+    <div class="accounts-grid">
+
+        <div class="account-card border-bbva">
+            <div class="acc-header">
+                <div class="acc-icon" style="color: #004481; background: #e0f2fe;"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="acc-title">
+                    <h3>BBVA</h3>
+                    <span>Efectivo y Traspasos (Mismo Banco)</span>
+                </div>
+            </div>
+            <div class="acc-number-box">
+                <span class="acc-label">Número de Cuenta</span>
+                <div class="acc-number">159-630-4855</div>
+            </div>
+            <div class="acc-owner">
+                Titular: <strong>Manuel Bedoy Bañuelos</strong>
+            </div>
+        </div>
+
+        <div class="account-card border-oxxo">
+            <div class="acc-header">
+                <div class="acc-icon" style="color: #EAB308; background: #FEF9C3;"><i class="fa-solid fa-store"></i></div>
+                <div class="acc-title">
+                    <h3>OXXO / Santander</h3>
+                    <span>Depósitos en Efectivo</span>
+                </div>
+            </div>
+            <div class="acc-number-box">
+                <span class="acc-label">Número de Tarjeta</span>
+                <div class="acc-number">5579-0701-3535-3475</div>
+            </div>
+            <div class="acc-owner">
+                Titular: <strong>Ana Delia Garcia Salcedo</strong>
+            </div>
+        </div>
+
+        <div class="account-card border-azteca">
+            <div class="acc-header">
+                <div class="acc-icon" style="color: #10B981; background: #DCFCE7;"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                <div class="acc-title">
+                    <h3>Banco Azteca</h3>
+                    <span>Efectivo y Traspasos (Mismo Banco)</span>
+                </div>
+            </div>
+            <div class="acc-number-box">
+                <span class="acc-label">Número de Cuenta</span>
+                <div class="acc-number">9546-1638-5382-16</div>
+            </div>
+            <div class="acc-owner">
+                Titular: <strong>Manuel Bedoy Bañuelos</strong>
+            </div>
+        </div>
+
+        <div class="account-card border-santander">
+            <div class="acc-header">
+                <div class="acc-icon" style="color: #EC0000; background: #FEE2E2;"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="acc-title">
+                    <h3>Santander</h3>
+                    <span>Efectivo y Traspasos (Mismo Banco)</span>
+                </div>
+            </div>
+            <div class="acc-number-box">
+                <span class="acc-label">Número de Cuenta</span>
+                <div class="acc-number">60582459213</div>
+            </div>
+            <div class="acc-owner">
+                Titular: <strong>Ana Delia Garcia Salcedo</strong>
+            </div>
+        </div>
+
+        <div class="account-card border-oxxo">
+            <div class="acc-header">
+                <div class="acc-icon" style="color: #9333EA; background: #F3E8FF;"><i class="fa-solid fa-credit-card"></i></div>
+                <div class="acc-title">
+                    <h3>SPIN by OXXO</h3>
+                    <span>Depósitos en Efectivo</span>
+                </div>
+            </div>
+            <div class="acc-number-box">
+                <span class="acc-label">Número de Tarjeta</span>
+                <div class="acc-number">2242-1703-2072-2561</div>
+            </div>
+            <div class="acc-owner">
+                Titular: <strong>Manuel Bedoy Bañuelos</strong>
+            </div>
+        </div>
+
+        <div class="account-card border-spei">
+            <div class="acc-header">
+                <div class="acc-icon" style="color: #6366F1; background: #E0E7FF;"><i class="fa-solid fa-globe"></i></div>
+                <div class="acc-title">
+                    <h3>SPEI (Interbancario)</h3>
+                    <span>Desde cualquier banco</span>
+                </div>
+            </div>
+            <div class="acc-number-box">
+                <span class="acc-label">CLABE Interbancaria</span>
+                <div class="acc-number" style="font-size: 1rem;">0144-1660-5824-5921-35</div>
+            </div>
+            <div class="acc-owner">
+                Titular: <strong>Ana Delia Garcia Salcedo</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <a href="https://wa.me/523318333058?text=Hola,%20adjunto%20mi%20comprobante%20de%20pago." target="_blank" class="whatsapp-btn">
+        <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem; margin-right: 5px;"></i>
+        Enviar Comprobante por WhatsApp (33 1833 3058)
+    </a>
+    
+    <div style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #94A3B8;">
+        <p>* Cuentas sujetas a cambio sin previo aviso. Consulte frecuentemente.</p>
+    </div>
+
 </div>
-
-<div class="bank-card">
-    <div class="bank-header">
-        <div class="bank-icon-box">
-            <i class="fa-solid fa-building-columns"></i>
-        </div>
-        <div class="bank-title">
-            <h3>Banco Nacional</h3>
-            <span>Cuenta Corriente</span>
-        </div>
-    </div>
-
-    <div class="account-detail">
-        <span class="detail-label">Número de Cuenta</span>
-        <div class="detail-value">
-            <span class="account-number">0001-0234-5678-9012</span> 
-            <i class="fa-regular fa-copy copy-btn" data-copy="0001-0234-5678-9012" title="Copiar número"></i>
-        </div>
-    </div>
-
-    <div class="account-detail">
-        <span class="detail-label">Titular</span>
-        <div class="detail-value">Wiznet S.A.</div>
-    </div>
-
-    <div class="account-detail" style="margin-bottom: 0;">
-        <span class="detail-label">Moneda</span>
-        <div class="detail-value">USD</div>
-    </div>
-</div>
-
-<div class="bank-card">
-    <div class="bank-header">
-        <div class="bank-icon-box">
-            <i class="fa-solid fa-building-columns"></i>
-        </div>
-        <div class="bank-title">
-            <h3>Banco Internacional</h3>
-            <span>Cuenta de Ahorros</span>
-        </div>
-    </div>
-
-    <div class="account-detail">
-        <span class="detail-label">Número de Cuenta</span>
-        <div class="detail-value">
-            <span class="account-number">1234-5678-9012-3456</span>
-            <i class="fa-regular fa-copy copy-btn" data-copy="1234-5678-9012-3456" title="Copiar número"></i>
-        </div>
-    </div>
-
-    <div class="account-detail">
-        <span class="detail-label">Titular</span>
-        <div class="detail-value">Wiznet S.A.</div>
-    </div>
-
-    <div class="account-detail" style="margin-bottom: 0;">
-        <span class="detail-label">Moneda</span>
-        <div class="detail-value">USD</div>
-    </div>
-</div>
-
-<div class="bank-card">
-    <div class="bank-header">
-        <div class="bank-icon-box">
-            <i class="fa-solid fa-building-columns"></i>
-        </div>
-        <div class="bank-title">
-            <h3>Banco Central</h3>
-            <span>Cuenta Corriente</span>
-        </div>
-    </div>
-
-    <div class="account-detail">
-        <span class="detail-label">Número de Cuenta</span>
-        <div class="detail-value">
-            <span class="account-number">9876-5432-1098-7654</span>
-            <i class="fa-regular fa-copy copy-btn" data-copy="9876-5432-1098-7654" title="Copiar número"></i>
-        </div>
-    </div>
-
-    <div class="account-detail">
-        <span class="detail-label">Titular</span>
-        <div class="detail-value">Wiznet S.A.</div>
-    </div>
-
-    <div class="account-detail" style="margin-bottom: 0;">
-        <span class="detail-label">Moneda</span>
-        <div class="detail-value">Colones</div>
-    </div>
-</div>
-
-<div class="info-box">
-    <h4>Instrucciones para Pago</h4>
-    <ul>
-        <li>Realice la transferencia o depósito a cualquiera de nuestras cuentas</li>
-        <li>Conserve el comprobante de pago</li>
-        <li>Reporte su pago en la sección "Reportar Pago" con el número de referencia</li>
-        <li>Su servicio será activado en un máximo de 24 horas hábiles</li>
-    </ul>
-</div>
-
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const copyButtons = document.querySelectorAll('.copy-btn');
-    const toast = document.createElement('div');
-    toast.className = 'copy-toast';
-    toast.textContent = 'Número copiado al portapapeles';
-    document.body.appendChild(toast);
-
-    const showToast = () => {
-        toast.classList.add('visible');
-        clearTimeout(showToast.timeoutId);
-        showToast.timeoutId = setTimeout(() => toast.classList.remove('visible'), 1800);
-    };
-
-    copyButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const value = btn.dataset.copy || btn.closest('.detail-value')?.querySelector('.account-number')?.textContent.trim();
-            if (!value) return;
-
-            try {
-                await navigator.clipboard.writeText(value);
-                btn.classList.add('copied');
-                const prevTitle = btn.title;
-                btn.title = 'Copiado';
-                showToast();
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    btn.title = prevTitle || 'Copiar número';
-                }, 1500);
-            } catch (error) {
-                console.error('No se pudo copiar el número de cuenta', error);
-            }
-        });
-    });
-});
-</script>

@@ -1,18 +1,18 @@
 <style>
     /* Contenedor centralizado para los planes */
     .pricing-container {
-        max-width: 900px; /* Ancho máximo para que se vea como en el diseño */
+        max-width: 1000px;
         margin: 0 auto;
     }
 
-    /* Cabecera de la sección (Icono y textos) */
+    /* Cabecera de la sección */
     .section-header {
         text-align: center;
         margin-bottom: 40px;
     }
     .header-icon {
-        background-color: #DBEAFE; /* Azul suave */
-        color: #2563EB; /* Azul fuerte */
+        background-color: #DBEAFE;
+        color: #2563EB;
         width: 50px;
         height: 50px;
         border-radius: 50%;
@@ -22,16 +22,10 @@
         font-size: 1.5rem;
         margin-bottom: 15px;
     }
-    .section-header h2 {
-        margin: 0 0 10px 0;
-        color: #1e293b;
-    }
-    .section-header p {
-        color: #64748B;
-        margin: 0;
-    }
+    .section-header h2 { margin: 0 0 10px 0; color: #1e293b; }
+    .section-header p { color: #64748B; margin: 0; }
 
-    /* Estilos Generales de las Tarjetas */
+    /* Estilos de las Tarjetas */
     .plan-card {
         background: white;
         border: 1px solid #e2e8f0;
@@ -40,17 +34,19 @@
         margin-bottom: 30px;
         text-align: center;
         position: relative; 
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
     }
     
-    /* Modificador para la tarjeta destacada (Más Popular) */
+    /* Destacado (Plan Medio) */
     .plan-card.featured {
         border: 2px solid #3B82F6; 
         padding-top: 0; 
         overflow: hidden; 
     }
-
-    /* Header de la tarjeta destacada */
     .featured-header {
         background-color: #3B82F6;
         color: white;
@@ -58,16 +54,23 @@
         font-size: 0.85rem;
         font-weight: 600;
         margin-bottom: 30px;
-        
         margin-left: -40px; 
         margin-right: -40px;
     }
 
-    /* Precios y Velocidad */
+    /* Textos */
     .plan-name {
-        font-size: 1rem;
+        font-size: 1.1rem;
+        font-weight: 700;
         color: #1e293b;
         margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+    .plan-desc {
+        font-size: 0.85rem;
+        color: #64748B;
+        margin-bottom: 20px;
+        min-height: 40px; /* Para alinear alturas */
     }
     .plan-price {
         font-size: 2.5rem;
@@ -85,15 +88,15 @@
         margin-top: 10px;
     }
     .plan-speed {
-        font-size: 1.25rem;
-        font-weight: 600;
+        font-size: 1.4rem;
+        font-weight: 800;
         color: #1e293b;
         margin: 5px 0 0 0;
     }
     .plan-speed-label {
         font-size: 0.8rem;
         color: #64748B;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         display: block;
     }
 
@@ -109,160 +112,140 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         font-size: 0.9rem;
         color: #334155;
     }
-    .check-icon {
-        color: #10B981; /* Verde */
-        font-size: 0.8rem;
-    }
+    .check-icon { color: #10B981; font-size: 0.8rem; }
+    .upload-icon { color: #3B82F6; font-size: 0.8rem; }
 
-    /* Botones de acción */
+    /* Botones */
     .btn-plan {
         width: 100%;
         padding: 12px;
         border-radius: 6px;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s;
         text-decoration: none;
         display: block;
         box-sizing: border-box;
     }
-    .btn-outline {
-        border: 1px solid #e2e8f0;
-        background: white;
-        color: #1e293b;
-    }
-    .btn-outline:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-    }
-    .btn-solid {
-        background: #000022; /* Color oscuro del diseño */
-        color: white;
-        border: none;
-    }
-    .btn-solid:hover {
-        background: #1e1e40;
+    .btn-outline { border: 1px solid #e2e8f0; background: white; color: #1e293b; }
+    .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .btn-solid { background: #000022; color: white; border: none; }
+    .btn-solid:hover { background: #1e1e40; }
+
+    /* Grid Responsivo */
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        align-items: start;
     }
 
-    /* Sección de Beneficios Inferior */
+    /* Beneficios */
     .benefits-section {
         background-color: #F1F5F9;
         border-radius: 8px;
         padding: 30px;
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 columnas iguales */
+        grid-template-columns: repeat(3, 1fr);
         gap: 20px;
         margin-top: 40px;
     }
-    .benefit-item h4 {
-        margin: 0 0 5px 0;
-        font-size: 0.95rem;
-        color: #1e293b;
-    }
-    .benefit-item p {
-        margin: 0;
-        font-size: 0.8rem;
-        color: #64748B;
-        line-height: 1.4;
-    }
-    @media (max-width: 900px) {
+    .benefit-item h4 { margin: 0 0 5px 0; font-size: 0.95rem; color: #1e293b; }
+    .benefit-item p { margin: 0; font-size: 0.8rem; color: #64748B; line-height: 1.4; }
+    
+    @media (max-width: 768px) {
         .pricing-container { padding: 0 15px; }
-        .plan-card { padding: 25px; }
-        .featured-header { margin-left: -25px; margin-right: -25px; }
-    }
-    @media (max-width: 600px) {
-        .plan-card { padding: 20px; }
-        .featured-header { margin-left: -20px; margin-right: -20px; }
-        .features-list { display: block; }
-        .benefits-section { grid-template-columns: 1fr; padding: 20px; }
+        .benefits-section { grid-template-columns: 1fr; }
     }
 </style>
 
 <div class="pricing-container view-shell">
 
     <div class="section-header">
-        <div class="header-icon">
-            <i class="fa-solid fa-wifi"></i>
-        </div>
-        <h2>Internet Residencial</h2>
-        <p>Encuentra el plan perfecto para tu hogar</p>
+        <div class="header-icon"><i class="fa-solid fa-wifi"></i></div>
+        <h2>Paquetes Internet Residencial</h2>
+        <p>Conectividad confiable para tu hogar</p>
     </div>
 
-    <div class="plan-card">
-        <div class="plan-name">Plan Básico</div>
-        <div class="plan-price">$25 <span>por mes</span></div>
-        <div class="plan-speed">10 Mbps</div>
-        <span class="plan-speed-label">Velocidad de descarga</span>
+    <div class="plans-grid">
+        <div class="plan-card">
+            <div class="plan-name">Paq. Básico Residencial</div>
+            <div class="plan-desc">Ideal para consumos bajos, mensajería y tareas básicas.</div>
+            
+            <div class="plan-price">$300 <span>/mes</span></div>
+            <div class="plan-speed">5 MB</div>
+            <span class="plan-speed-label">Descarga</span>
 
-        <div class="features-list">
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Navegación web</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Redes sociales</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Email</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Streaming básico</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Soporte 24/7</div>
+            <div class="features-list">
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Navegación Ilimitada</div>
+                <div class="feature-item"><i class="fa-solid fa-arrow-up upload-icon"></i> <strong>2 MB</strong> de Carga</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Mensajería instantánea</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Redes sociales básicas</div>
+            </div>
+
+            <a href="?vista=contratacion&plan=basico_residencial" class="btn-plan btn-outline">Contratar</a>
         </div>
 
-        <a href="?vista=contratacion&plan=basico" class="btn-plan btn-outline">Contratar Plan</a>
-    </div>
+        <div class="plan-card featured">
+            <div class="featured-header">Recomendado</div>
+            
+            <div class="plan-name">Paq. Medio Residencial</div>
+            <div class="plan-desc">Ideal para consumos medios y entretenimiento.</div>
 
-    <div class="plan-card featured">
-        <div class="featured-header">Más Popular</div>
+            <div class="plan-price">$400 <span>/mes</span></div>
+            <div class="plan-speed">7 MB</div>
+            <span class="plan-speed-label">Descarga</span>
 
-        <div class="plan-name">Plan Hogar</div>
-        <div class="plan-price">$45 <span>por mes</span></div>
-        <div class="plan-speed">30 Mbps</div>
-        <span class="plan-speed-label">Velocidad de descarga</span>
+            <div class="features-list">
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Navegación Ilimitada</div>
+                <div class="feature-item"><i class="fa-solid fa-arrow-up upload-icon"></i> <strong>3 MB</strong> de Carga</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Streaming estándar</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Videollamadas</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Teletrabajo básico</div>
+            </div>
 
-        <div class="features-list">
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Todo lo del Plan Básico</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Streaming HD</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Videollamadas</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Gaming online</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Conexión estable</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Router WiFi incluido</div>
+            <a href="?vista=contratacion&plan=medio_residencial" class="btn-plan btn-solid">Contratar</a>
         </div>
 
-        <a href="?vista=contratacion&plan=hogar" class="btn-plan btn-solid">Contratar Plan</a>
-    </div>
+        <div class="plan-card">
+            <div class="plan-name">Paq. Alto Residencial</div>
+            <div class="plan-desc">Para consumos altos, descargas y múltiples dispositivos.</div>
 
-    <div class="plan-card">
-        <div class="plan-name">Plan Premium</div>
-        <div class="plan-price">$75 <span>por mes</span></div>
-        <div class="plan-speed">100 Mbps</div>
-        <span class="plan-speed-label">Velocidad de descarga</span>
+            <div class="plan-price">$550 <span>/mes</span></div>
+            <div class="plan-speed">10 MB</div>
+            <span class="plan-speed-label">Descarga</span>
 
-        <div class="features-list">
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Todo lo del Plan Hogar</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Streaming 4K</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Múltiples dispositivos</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Velocidad garantizada</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Instalación gratis</div>
-            <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Router WiFi Mesh</div>
+            <div class="features-list">
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Navegación Ilimitada</div>
+                <div class="feature-item"><i class="fa-solid fa-arrow-up upload-icon"></i> <strong>5 MB</strong> de Carga</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Streaming HD</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Gaming online</div>
+                <div class="feature-item"><i class="fa-solid fa-check check-icon"></i> Descargas rápidas</div>
+            </div>
+
+            <a href="?vista=contratacion&plan=alto_residencial" class="btn-plan btn-outline">Contratar</a>
         </div>
-
-        <a href="?vista=contratacion&plan=premium" class="btn-plan btn-outline">Contratar Plan</a>
     </div>
 
-    <div style="margin-top: 40px; margin-bottom: 10px;">
-        <h4 style="margin: 0; color: #333; font-size: 0.95rem;">Beneficios Adicionales</h4>
+    <div style="margin-top: 30px; text-align: center; color: #64748B; font-size: 0.85rem;">
+        <p>* Consulte gastos de activación de servicio e instalación.</p>
     </div>
     
     <div class="benefits-section">
         <div class="benefit-item">
-            <h4>Instalación Profesional</h4>
-            <p>Técnicos certificados instalarán tu servicio</p>
+            <h4>Instalación Rápida</h4>
+            <p>Agenda tu cita y conéctate en tiempo récord.</p>
         </div>
         <div class="benefit-item">
-            <h4>Sin Contratos</h4>
-            <p>Cancela cuando quieras sin penalizaciones</p>
+            <h4>Soporte Local</h4>
+            <p>Atención personalizada cerca de ti.</p>
         </div>
         <div class="benefit-item">
-            <h4>Soporte 24/7</h4>
-            <p>Asistencia técnica disponible todo el tiempo</p>
+            <h4>Sin Plazos Forzosos</h4>
+            <p>Libertad para cambiar de plan cuando quieras.</p>
         </div>
     </div>
 

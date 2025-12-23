@@ -2,60 +2,50 @@
 // archivo: includes/conexion.php
 
 // ====================================================
-// 1. CONFIGURACIÓN DEL ENTORNO
+// 🎛️ INTERRUPTOR DE ENTORNO
 // ====================================================
+// true  = Modo Local (WAMP/XAMPP)
+// false = Modo Producción (Servidor Real)
 
-// PON ESTO EN 'true' PARA TRABAJAR EN TU PC (WAMP)
-// PON ESTO EN 'false' CUANDO LO SUBAS AL SERVIDOR
-$modo_local = true; 
+$modo_local = false;  // <--- ¡LISTO PARA PRODUCCIÓN!
 
 
 if ($modo_local) {
-    // 🏠 DATOS PARA TU PC (WAMP)
+    // 🏠 CONFIGURACIÓN LOCAL (Tu PC)
     $host = "localhost";
     $user = "root";
     $password = ""; 
-    
-    // ⚠️ IMPORTANTE: Si en tu phpMyAdmin local tu base se llama "wiznet",
-    // cambia la línea de abajo por: $database = "wiznet";
-    $database = "wiznet"; 
+    $database = "wiznet_wiznet"; 
 
 } else {
-    // ☁️ DATOS PARA EL SERVIDOR (PRODUCCIÓN)
-    $host = "localhost"; 
+    // CONFIGURACIÓN PRODUCCIÓN (Credenciales Oficiales)
+    $host = "187.189.95.34"; 
     $user = "wiznet_wiznet";
+   
     $password = 'YI13$~PNk@#z'; 
     $database = "wiznet_wiznet";
 }
 
-// ====================================================
-// 2. CREAR LA CONEXIÓN
-// ====================================================
-// Usamos el @ para suprimir el error visual feo de PHP y manejarlo nosotros abajo
-$conn = @new mysqli($host, $user, $password, $database);
 
 // ====================================================
-// 3. VERIFICAR ERRORES
-// ====================================================
+// Usamos el @ para manejar los errores nosotros mismos
+$conn = @new mysqli($host, $user, $password, $database);
+
+// Verificar errores
 if ($conn->connect_error) {
     if ($modo_local) {
-        // Mensaje detallado solo para ti en local
-        die("<h1>❌ Error de Conexión Local (WAMP)</h1>
-             <p><b>Error:</b> " . $conn->connect_error . "</p>
-             <p><b>Revisa:</b><br>
-             1. Que WAMP esté en verde.<br>
-             2. Que la base de datos <b>'$database'</b> exista en phpMyAdmin.<br>
-             3. Que el usuario sea 'root' y sin contraseña.</p>");
+        die("❌ Error de conexión LOCAL: " . $conn->connect_error);
     } else {
-        // Mensaje seguro para producción
-        die("Error de conexión al sistema. Intente más tarde.");
+        // En producción mostramos un mensaje genérico por seguridad, 
+
+        die("Error de conexión al sistema de Wiznet. ");
     }
 }
 
 // Configurar caracteres especiales (tildes, ñ)
 $conn->set_charset("utf8");
 
-// Iniciar sesión si no está iniciada
+// Iniciar sesión globalmente
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

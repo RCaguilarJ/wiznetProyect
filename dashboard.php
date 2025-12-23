@@ -59,9 +59,9 @@ function is_active($target, $current) {
             <a href="?vista=internet_residencial" class="menu-item <?php echo is_active('internet_residencial', $vista); ?>">
                 <i class="fa-solid fa-wifi"></i> Internet Residencial
             </a>
-            <a href="?vista=internet_comercial" class="menu-item <?php echo is_active('internet_comercial', $vista); ?>">
+            <!-- <a href="?vista=internet_comercial" class="menu-item <?php echo is_active('internet_comercial', $vista); ?>">
                 <i class="fa-solid fa-building"></i> Internet Comercial
-            </a>
+            </a> -->
             <a href="?vista=contratacion" class="menu-item <?php echo is_active('contratacion', $vista); ?>">
                 <i class="fa-regular fa-file-lines"></i> Formulario de Contratación
             </a>

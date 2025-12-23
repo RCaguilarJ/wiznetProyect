@@ -6,14 +6,15 @@ $mensaje_error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // Limpieza de datos
+    // Limpieza de datos para evitar inyección SQL
     $correo_ingresado = $conn->real_escape_string($_POST['email']);
     $password_ingresado = $_POST['password'];
 
     // =========================================================
-    // CORRECCIÓN CRÍTICA: TABLA CLIENTES / COLUMNA CORREO
+    // CONSULTA OFICIAL DE PRODUCCIÓN
     // =========================================================
-    // En tu BD de producción la tabla es 'clientes' y el usuario es 'correo'
+    // Tabla: 'clientes'
+    // Columna de usuario: 'correo'
     
     $sql = "SELECT * FROM clientes WHERE correo = '$correo_ingresado' LIMIT 1";
     $resultado = $conn->query($sql);
@@ -23,13 +24,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         $datos_usuario = $resultado->fetch_assoc();
         
-        // Verificamos si tiene contraseña configurada (no está vacía o NULL)
+        // Verificamos si tiene contraseña configurada
         if (!empty($datos_usuario['password'])) {
             
             $password_db = $datos_usuario['password'];
             $login_exitoso = false;
 
-            // --- VALIDACIÓN DE CONTRASEÑA (Soporta 3 métodos) ---
+            // --- VALIDACIÓN DE CONTRASEÑA (Soporta 3 métodos para compatibilidad) ---
             if (password_verify($password_ingresado, $password_db)) {
                 $login_exitoso = true;
             } 
@@ -42,6 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($login_exitoso) {
                 // --- LOGIN CORRECTO ---
+                // Guardamos los datos clave en la sesión
                 $_SESSION['usuario_id'] = $datos_usuario['id'];
                 $_SESSION['nombre'] = $datos_usuario['nombre'];
                 $_SESSION['email'] = $datos_usuario['correo']; // Guardamos el correo real
@@ -54,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
         } else {
-            $mensaje_error = "Este usuario no tiene una contraseña configurada.";
+            $mensaje_error = "Este usuario no tiene una contraseña configurada. Contacte a soporte.";
         }
 
     } else {
