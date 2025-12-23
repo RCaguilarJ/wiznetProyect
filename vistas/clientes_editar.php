@@ -7,13 +7,13 @@ if (!isset($conn)) {
     elseif (file_exists("../includes/conexion.php")) require_once "../includes/conexion.php";
 }
 
-// 2. Verificar que recibimos un ID
-if (!isset($_GET['id'])) {
-    echo "<script>alert('No se especificó un cliente.'); window.location.href='dashboard.php?vista=clientes';</script>";
+if (!isset($_SESSION['usuario_id'])) {
+    echo "<script>window.location.href='index.php';</script>";
     exit;
 }
 
-$id_cliente = $conn->real_escape_string($_GET['id']);
+$id_cliente = (int) $_SESSION['usuario_id'];
+
 $mensaje = "";
 
 // --- PARTE A: PROCESAR EL FORMULARIO (UPDATE) ---

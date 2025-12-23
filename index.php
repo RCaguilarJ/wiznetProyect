@@ -6,16 +6,13 @@ $mensaje_error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // Limpiamos los datos de entrada
+    // Limpieza de datos
     $correo_ingresado = $conn->real_escape_string($_POST['email']);
     $password_ingresado = $_POST['password'];
 
-    // =========================================================
-    // CONFIGURACIÓN DE TABLAS (PRODUCCIÓN)
-    // =========================================================
+    // --- CORRECCIÓN CRÍTICA PARA PRODUCCIÓN ---
     // Tabla: 'clientes'
-    // Columna usuario: 'correo' (Confirmado en tu SQL)
-    // Columna clave: 'password'
+    // Columna usuario: 'correo'
     
     $sql = "SELECT * FROM clientes WHERE correo = '$correo_ingresado' LIMIT 1";
     $resultado = $conn->query($sql);
@@ -24,33 +21,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         $datos_usuario = $resultado->fetch_assoc();
         
-        // Verificamos que el usuario tenga contraseña configurada
+        // Verificamos si tiene contraseña
         if (!empty($datos_usuario['password'])) {
             
             $password_db = $datos_usuario['password'];
             $login_exitoso = false;
 
             // --- VALIDACIÓN DE CONTRASEÑA (3 MÉTODOS) ---
-            // 1. Password Hash (Lo ideal)
             if (password_verify($password_ingresado, $password_db)) {
                 $login_exitoso = true;
-            } 
-            // 2. MD5 (Sistemas legacy)
-            elseif (md5($password_ingresado) === $password_db) {
+            } elseif (md5($password_ingresado) === $password_db) {
                 $login_exitoso = true;
-            } 
-            // 3. Texto Plano (Sin seguridad)
-            elseif ($password_ingresado === $password_db) {
+            } elseif ($password_ingresado === $password_db) {
                 $login_exitoso = true;
             }
 
             if ($login_exitoso) {
-                // --- LOGIN CORRECTO ---
+                // Login exitoso: Guardar sesión
                 $_SESSION['usuario_id'] = $datos_usuario['id'];
                 $_SESSION['nombre'] = $datos_usuario['nombre'];
-                $_SESSION['email'] = $datos_usuario['correo']; // Guardamos el correo real
+                $_SESSION['email'] = $datos_usuario['correo']; 
                 
-                // Redirigir al Dashboard
                 header("Location: dashboard.php");
                 exit();
 
@@ -67,7 +58,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -80,11 +70,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="login-wrapper">
         <div class="login-card">
             <img src="assets/img/logo.png" alt="Wiznet" class="login-logo" style="max-width: 150px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
-            
             <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; display:flex; align-items:center; justify-content:center; gap:10px;">
                 <i class="fa-solid fa-circle-nodes" style="color: #3B82F6;"></i> WIZNET
             </div>
-            
             <p style="color: #64748B; font-size: 0.9rem; margin-bottom: 30px; text-align: center;">Acceso a Clientes</p>
 
             <?php if(!empty($mensaje_error)): ?>
@@ -98,7 +86,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label>Correo Electrónico</label>
                     <input type="email" name="email" class="form-control" placeholder="cliente@email.com" required>
                 </div>
-
                 <div class="input-group">
                     <label>Contraseña</label>
                     <div style="position:relative;">
@@ -106,7 +93,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <i class="fa-regular fa-eye" style="position:absolute; right:15px; top:12px; color:#999; cursor:pointer;"></i>
                     </div>
                 </div>
-
                 <button type="submit" class="btn-primary">Ingresar</button>
             </form>
         </div>

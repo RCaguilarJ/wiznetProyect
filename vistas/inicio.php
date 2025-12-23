@@ -7,11 +7,18 @@ if (!isset($conn)) {
     elseif (file_exists("../includes/conexion.php")) require_once "../includes/conexion.php";
 }
 
-// 2. KPI ÚNICO: Total Clientes (Consulta Real)
+if (!isset($_SESSION['usuario_id'])) {
+    echo "<script>window.location.href='index.php';</script>";
+    exit;
+}
+
+$id_cliente_sesion = (int) $_SESSION['usuario_id'];
+
+// 2. KPI UNICO: Total Clientes (limitado al cliente en sesion)
 $total_clientes = 0;
 $check_cli = $conn->query("SHOW TABLES LIKE 'clientes'");
 if($check_cli && $check_cli->num_rows > 0) {
-    $row_c = $conn->query("SELECT COUNT(*) as total FROM clientes");
+    $row_c = $conn->query("SELECT COUNT(*) as total FROM clientes WHERE id = $id_cliente_sesion");
     if($row_c) $total_clientes = $row_c->fetch_assoc()['total'];
 }
 
@@ -154,7 +161,7 @@ $data_velocidad = [450, 480, 470, 510, 500, 530, 520];
     <div class="kpi-row">
         <div class="kpi-card">
             <div class="kpi-info">
-                <h4>Total Clientes Activos</h4>
+                <h4>Mi cuenta</h4>
                 <span><?php echo $total_clientes; ?></span>
             </div>
             <div class="kpi-icon icon-blue">

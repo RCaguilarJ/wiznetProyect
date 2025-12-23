@@ -7,12 +7,19 @@ if (!isset($conn)) {
     elseif (file_exists("../includes/conexion.php")) require_once "../includes/conexion.php";
 }
 
+if (!isset($_SESSION['usuario_id'])) {
+    echo "<script>window.location.href='index.php';</script>";
+    exit;
+}
+
+$id_cliente_sesion = (int) $_SESSION['usuario_id'];
+
 // 2. Actualizar Estatus (Acción rápida)
 if (isset($_GET['accion']) && isset($_GET['id'])) {
     $nuevo_estatus = $conn->real_escape_string($_GET['accion']);
     $id_orden = (int)$_GET['id'];
     
-    $conn->query("UPDATE ordenes SET status = '$nuevo_estatus' WHERE id = $id_orden");
+    $conn->query("UPDATE ordenes SET status = '$nuevo_estatus' WHERE id = $id_orden AND fk_cliente = $id_cliente_sesion");
     
     // Recargar manteniendo el filtro y la página
     $filtro_actual = isset($_GET['filtro']) ? $_GET['filtro'] : 'todos';
@@ -26,11 +33,12 @@ if (isset($_GET['accion']) && isset($_GET['id'])) {
 // A. Obtener filtro actual
 $filtro = isset($_GET['filtro']) ? $_GET['filtro'] : 'todos';
 
-// B. Configurar cláusula WHERE según el filtro
-$condicion_sql = "";
-if ($filtro == 'proceso')     $condicion_sql = " WHERE o.status = 'En proceso'";
-elseif ($filtro == 'aceptado') $condicion_sql = " WHERE o.status = 'Aceptado'";
-elseif ($filtro == 'cancelado')$condicion_sql = " WHERE o.status = 'Cancelado'";
+// B. Configurar clausula WHERE segun el filtro (limitado al cliente en sesion)
+$condiciones = ["o.fk_cliente = $id_cliente_sesion"];
+if ($filtro == 'proceso')     $condiciones[] = "o.status = 'En proceso'";
+elseif ($filtro == 'aceptado') $condiciones[] = "o.status = 'Aceptado'";
+elseif ($filtro == 'cancelado')$condiciones[] = "o.status = 'Cancelado'";
+$condicion_sql = " WHERE " . implode(" AND ", $condiciones);
 // Nota: Si hay un estatus 'Nuevo' en tu lógica pero no en el ENUM, ajusta aquí si es necesario.
 
 // C. Configurar Paginación

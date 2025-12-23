@@ -21,8 +21,7 @@ if ($conn->connect_error) {
 echo "<hr>";
 echo "<h3>📂 Listando lo que se encontró en la base de datos 'wiznet':</h3>";
 
-// 3. La orden del jefe: "Que liste lo que encuentre"
-// Vamos a pedirle a la base de datos que nos muestre todas sus tablas
+
 $sql = "SHOW TABLES";
 $resultado = $conn->query($sql);
 

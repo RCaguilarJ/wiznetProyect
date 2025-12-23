@@ -9,6 +9,13 @@ if (!isset($conn)) {
     }
 }
 
+if (!isset($_SESSION['usuario_id'])) {
+    echo "<script>window.location.href='index.php';</script>";
+    exit;
+}
+
+$id_cliente_sesion = (int) $_SESSION['usuario_id'];
+
 // --- CONFIGURACIÓN DE PAGINACIÓN ---
 $registros_por_pagina = 10;
 
@@ -20,7 +27,7 @@ if ($pagina_actual < 1) $pagina_actual = 1;
 $inicio_query = ($pagina_actual - 1) * $registros_por_pagina;
 
 // 3. Contar TOTAL de clientes (para saber cuántas páginas dibujar)
-$sql_total = "SELECT COUNT(*) as total FROM clientes";
+$sql_total = "SELECT COUNT(*) as total FROM clientes WHERE id = $id_cliente_sesion";
 $resultado_total = $conn->query($sql_total);
 $fila_total = $resultado_total->fetch_assoc();
 $total_registros = $fila_total['total'];
@@ -28,7 +35,7 @@ $total_paginas = ceil($total_registros / $registros_por_pagina);
 
 // 4. Consulta LIMITADA (Esta es la que carga solo 10)
 // 
-$sql = "SELECT * FROM clientes ORDER BY id DESC LIMIT $inicio_query, $registros_por_pagina";
+$sql = "SELECT * FROM clientes WHERE id = $id_cliente_sesion ORDER BY id DESC LIMIT $inicio_query, $registros_por_pagina";
 $result = $conn->query($sql);
 
 ?>

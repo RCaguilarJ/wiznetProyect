@@ -1,27 +1,39 @@
 <?php
 // archivo: includes/conexion.php
 
-// --- CONFIGURACIÓN DE PRODUCCIÓN ---
-// Al estar el archivo en el mismo servidor que la base de datos (cPanel), usamos "localhost".
-$host = "localhost"; 
-$user = "wiznet_wiznet";
-// IMPORTANTE: Comillas simples ' ' para que el símbolo $ no rompa el código
-$password = 'YI13$~PNk@#z'; 
-$database = "wiznet_wiznet";
+$config = require __DIR__ . "/../config.php";
+$db = $config["db"];
 
-// Crear conexión
-$conn = new mysqli($host, $user, $password, $database);
+$conn = mysqli_init();
+$client_flags = 0;
 
-// Verificar errores
-if ($conn->connect_error) {
-    // En producción mostramos un mensaje genérico por seguridad
-    die("Error de conexión al sistema."); 
+if (!empty($db["ssl_ca"])) {
+    $conn->ssl_set(
+        $db["ssl_key"],
+        $db["ssl_cert"],
+        $db["ssl_ca"],
+        null,
+        null
+    );
+    $client_flags |= MYSQLI_CLIENT_SSL;
 }
 
-// Establecer codificación a UTF-8 para tildes y ñ
-$conn->set_charset("utf8");
+$conn->real_connect(
+    $db["host"],
+    $db["user"],
+    $db["pass"],
+    $db["name"],
+    $db["port"],
+    null,
+    $client_flags
+);
 
-// Iniciar sesión si no está iniciada
+if ($conn->connect_error) {
+    die("Error de conexion al sistema.");
+}
+
+$conn->set_charset($db["charset"]);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

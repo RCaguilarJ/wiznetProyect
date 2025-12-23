@@ -1,4 +1,10 @@
 <?php
+require_once "includes/conexion.php";
+
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: index.php");
+    exit;
+}
 
 $vista = isset($_GET['vista']) ? $_GET['vista'] : 'inicio';
 
