@@ -9,7 +9,7 @@
 
 $modo_local = true;  // <--- ¡LISTO PARA ENVIAR! (En false)
 
-
+            
 if ($modo_local) {
     //  CONFIGURACIÓN LOCAL (Tu PC)
     $host = "localhost";
