@@ -23,7 +23,10 @@ $numero_fijo = $cliente['numero'] ?? '---';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     $monto = $conn->real_escape_string($_POST['monto']);
-    $fecha = $conn->real_escape_string($_POST['fecha']);
+    
+    // CAMBIO: Forzamos la fecha al día actual del servidor (Seguridad)
+    $fecha = date('Y-m-d'); 
+    
     $metodo = $conn->real_escape_string($_POST['metodo']);
     $referencia = $conn->real_escape_string($_POST['referencia']);
     $banco = $conn->real_escape_string($_POST['banco']);
@@ -42,12 +45,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!empty($monto) && !empty($referencia)) {
-        // Insertamos usando el ID de sesión (Seguridad)
+        // Insertamos usando el ID de sesión
         $sql_insert = "INSERT INTO pagos (fk_cliente, monto, fecha_pago, metodo_pago, referencia, banco_origen, comprobante_url, comentarios, status, fecha_registro) 
                        VALUES ('$id_usuario', '$monto', '$fecha', '$metodo', '$referencia', '$banco', '$ruta_final', '$comentarios', 'Pendiente', NOW())";
 
         if ($conn->query($sql_insert) === TRUE) {
-            $mensaje = "✅ Pago reportado correctamente.";
+            $mensaje = "✅ Pago reportado correctamente con fecha de hoy.";
             $tipo_mensaje = "success";
         } else {
             $mensaje = "Error al registrar: " . $conn->error;
@@ -61,7 +64,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <style>
-    .input-locked { background-color: #f1f5f9; color: #64748B; cursor: not-allowed; border: 1px solid #e2e8f0; }
+    /* Estilo para campos bloqueados */
+    .input-locked { 
+        background-color: #f1f5f9 !important; 
+        color: #64748B !important; 
+        cursor: not-allowed !important; 
+        border: 1px solid #e2e8f0; 
+    }
+    
     .report-wrapper { max-width: 800px; margin: 0 auto; }
     .card-box { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; margin-top:20px; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -94,12 +104,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="form-group">
                     <label>Monto Pagado *</label>
-                    <input type="number" name="monto" step="0.01" class="form-control" required>
+                    <input type="number" name="monto" step="0.01" class="form-control" placeholder="0.00" required>
                 </div>
+                
                 <div class="form-group">
-                    <label>Fecha Pago *</label>
-                    <input type="date" name="fecha" class="form-control" required>
+                    <label>Fecha Pago (Automática)</label>
+                    <input type="date" name="fecha" class="form-control input-locked" value="<?php echo date('Y-m-d'); ?>" readonly>
                 </div>
+                
                 <div class="form-group">
                     <label>Método *</label>
                     <select name="metodo" class="form-control" required>
@@ -112,6 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label>Referencia / Comprobante *</label>
                     <input type="text" name="referencia" class="form-control" placeholder="Ej: 123456" required>
                 </div>
+                
                 <div class="form-group full-width">
                     <label>Adjuntar Foto/PDF (Opcional)</label>
                     <input type="file" name="comprobante" class="form-control">

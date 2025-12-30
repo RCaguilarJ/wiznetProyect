@@ -2,50 +2,46 @@
 // archivo: includes/conexion.php
 
 // ====================================================
-// 🎛️ INTERRUPTOR DE ENTORNO
+//  INTERRUPTOR DE ENTORNO
 // ====================================================
-// true  = Modo Local (WAMP/XAMPP)
+// true  = Modo Local (Tu PC)
 // false = Modo Producción (Servidor Real)
 
-$modo_local = false;  // <--- ¡LISTO PARA PRODUCCIÓN!
+$modo_local = true;  // <--- ¡LISTO PARA ENVIAR! (En false)
 
 
 if ($modo_local) {
-    // 🏠 CONFIGURACIÓN LOCAL (Tu PC)
+    //  CONFIGURACIÓN LOCAL (Tu PC)
     $host = "localhost";
     $user = "root";
     $password = ""; 
-    $database = "wiznet_wiznet"; 
+    $database = "wiznet"; 
 
-} else {
-    // CONFIGURACIÓN PRODUCCIÓN (Credenciales Oficiales)
-    $host = "187.189.95.34"; 
-    $user = "wiznet_wiznet";
-   
-    $password = 'YI13$~PNk@#z'; 
-    $database = "wiznet_wiznet";
+// } else {
+    //  CONFIGURACIÓN PRODUCCIÓN (IP Específica)
+    // $host = "162.240.228.124"; 
+    // $user = "wiznet_wiznet";
+    // $password = 'YI13$~PNk@#z'; 
+    // $database = "wiznet_wiznet";
 }
 
-
 // ====================================================
-// Usamos el @ para manejar los errores nosotros mismos
+//  CREAR CONEXIÓN
+// ====================================================
 $conn = @new mysqli($host, $user, $password, $database);
 
 // Verificar errores
 if ($conn->connect_error) {
     if ($modo_local) {
-        die("❌ Error de conexión LOCAL: " . $conn->connect_error);
+        die("❌ Error LOCAL: " . $conn->connect_error);
     } else {
-        // En producción mostramos un mensaje genérico por seguridad, 
-
-        die("Error de conexión al sistema de Wiznet. ");
+    
+        die("Error de conexión al sistema. ");
     }
 }
 
-// Configurar caracteres especiales (tildes, ñ)
 $conn->set_charset("utf8");
 
-// Iniciar sesión globalmente
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

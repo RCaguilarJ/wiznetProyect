@@ -40,12 +40,12 @@
         border-color: #cbd5e1;
     }
     
-    /* Borde superior de color por tipo */
+    /* Bordes de color */
     .border-bbva { border-top: 4px solid #004481; }
-    .border-oxxo { border-top: 4px solid #EAB308; } /* Amarillo Oxxo */
-    .border-azteca { border-top: 4px solid #10B981; } /* Verde */
-    .border-santander { border-top: 4px solid #EC0000; } /* Rojo */
-    .border-spei { border-top: 4px solid #6366F1; } /* Morado SPEI */
+    .border-oxxo { border-top: 4px solid #EAB308; }
+    .border-azteca { border-top: 4px solid #10B981; }
+    .border-santander { border-top: 4px solid #EC0000; }
+    .border-spei { border-top: 4px solid #6366F1; }
 
     .acc-header {
         display: flex;
@@ -74,7 +74,16 @@
         border-radius: 6px;
         text-align: center;
         margin-bottom: 15px;
+        position: relative;
     }
+    
+    .acc-number-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
     .acc-number {
         font-family: monospace;
         font-size: 1.2rem;
@@ -82,6 +91,17 @@
         color: #333;
         letter-spacing: 1px;
     }
+    
+    /* Botón de copiar */
+    .btn-copy {
+        cursor: pointer;
+        color: #64748B;
+        font-size: 1.1rem;
+        transition: color 0.2s, transform 0.1s;
+    }
+    .btn-copy:hover { color: #3B82F6; }
+    .btn-copy:active { transform: scale(0.9); }
+
     .acc-label {
         display: block;
         font-size: 0.75rem;
@@ -98,26 +118,38 @@
     }
     .acc-owner strong { color: #1e293b; }
 
-    .whatsapp-btn {
-        display: block;
-        background-color: #25D366;
-        color: white;
+    /* Toast de Notificación */
+    #copyToast {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #333;
+        color: #fff;
         text-align: center;
-        padding: 12px;
         border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        margin-top: 40px;
-        transition: background 0.2s;
+        padding: 12px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        transform: translateX(-50%);
+        font-size: 0.9rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        opacity: 0;
+        transition: opacity 0.3s, bottom 0.3s;
     }
-    .whatsapp-btn:hover { background-color: #1ebc57; }
+    #copyToast.show {
+        visibility: visible;
+        opacity: 1;
+        bottom: 50px;
+    }
+    #copyToast i { margin-right: 8px; color: #4ade80; }
 </style>
 
 <div class="accounts-wrapper view-shell">
 
     <div class="page-header">
         <h2>Cuentas Bancarias</h2>
-        <p>Realice sus pagos de forma segura en las siguientes cuentas</p>
+        <p>Realice sus pagos de forma segura</p>
     </div>
 
     <div class="alert-box">
@@ -133,12 +165,15 @@
                 <div class="acc-icon" style="color: #004481; background: #e0f2fe;"><i class="fa-solid fa-building-columns"></i></div>
                 <div class="acc-title">
                     <h3>BBVA</h3>
-                    <span>Efectivo y Traspasos (Mismo Banco)</span>
+                    <span>Efectivo y Traspasos</span>
                 </div>
             </div>
             <div class="acc-number-box">
                 <span class="acc-label">Número de Cuenta</span>
-                <div class="acc-number">159-630-4855</div>
+                <div class="acc-number-wrapper">
+                    <div class="acc-number">1596304855</div>
+                    <i class="fa-regular fa-copy btn-copy" onclick="copiarAlPortapapeles('1596304855')" title="Copiar"></i>
+                </div>
             </div>
             <div class="acc-owner">
                 Titular: <strong>Manuel Bedoy Bañuelos</strong>
@@ -155,7 +190,10 @@
             </div>
             <div class="acc-number-box">
                 <span class="acc-label">Número de Tarjeta</span>
-                <div class="acc-number">5579-0701-3535-3475</div>
+                <div class="acc-number-wrapper">
+                    <div class="acc-number">5579070135353475</div>
+                    <i class="fa-regular fa-copy btn-copy" onclick="copiarAlPortapapeles('5579070135353475')" title="Copiar"></i>
+                </div>
             </div>
             <div class="acc-owner">
                 Titular: <strong>Ana Delia Garcia Salcedo</strong>
@@ -167,12 +205,15 @@
                 <div class="acc-icon" style="color: #10B981; background: #DCFCE7;"><i class="fa-solid fa-money-bill-transfer"></i></div>
                 <div class="acc-title">
                     <h3>Banco Azteca</h3>
-                    <span>Efectivo y Traspasos (Mismo Banco)</span>
+                    <span>Efectivo y Traspasos</span>
                 </div>
             </div>
             <div class="acc-number-box">
                 <span class="acc-label">Número de Cuenta</span>
-                <div class="acc-number">9546-1638-5382-16</div>
+                <div class="acc-number-wrapper">
+                    <div class="acc-number">95461638538216</div>
+                    <i class="fa-regular fa-copy btn-copy" onclick="copiarAlPortapapeles('95461638538216')" title="Copiar"></i>
+                </div>
             </div>
             <div class="acc-owner">
                 Titular: <strong>Manuel Bedoy Bañuelos</strong>
@@ -184,12 +225,15 @@
                 <div class="acc-icon" style="color: #EC0000; background: #FEE2E2;"><i class="fa-solid fa-building-columns"></i></div>
                 <div class="acc-title">
                     <h3>Santander</h3>
-                    <span>Efectivo y Traspasos (Mismo Banco)</span>
+                    <span>Efectivo y Traspasos</span>
                 </div>
             </div>
             <div class="acc-number-box">
                 <span class="acc-label">Número de Cuenta</span>
-                <div class="acc-number">60582459213</div>
+                <div class="acc-number-wrapper">
+                    <div class="acc-number">60582459213</div>
+                    <i class="fa-regular fa-copy btn-copy" onclick="copiarAlPortapapeles('60582459213')" title="Copiar"></i>
+                </div>
             </div>
             <div class="acc-owner">
                 Titular: <strong>Ana Delia Garcia Salcedo</strong>
@@ -206,7 +250,10 @@
             </div>
             <div class="acc-number-box">
                 <span class="acc-label">Número de Tarjeta</span>
-                <div class="acc-number">2242-1703-2072-2561</div>
+                <div class="acc-number-wrapper">
+                    <div class="acc-number">2242170320722561</div>
+                    <i class="fa-regular fa-copy btn-copy" onclick="copiarAlPortapapeles('2242170320722561')" title="Copiar"></i>
+                </div>
             </div>
             <div class="acc-owner">
                 Titular: <strong>Manuel Bedoy Bañuelos</strong>
@@ -223,7 +270,10 @@
             </div>
             <div class="acc-number-box">
                 <span class="acc-label">CLABE Interbancaria</span>
-                <div class="acc-number" style="font-size: 1rem;">0144-1660-5824-5921-35</div>
+                <div class="acc-number-wrapper">
+                    <div class="acc-number" style="font-size: 0.95rem;">014416605824592135</div>
+                    <i class="fa-regular fa-copy btn-copy" onclick="copiarAlPortapapeles('014416605824592135')" title="Copiar"></i>
+                </div>
             </div>
             <div class="acc-owner">
                 Titular: <strong>Ana Delia Garcia Salcedo</strong>
@@ -231,14 +281,30 @@
         </div>
 
     </div>
-
-    <a href="https://wa.me/523318333058?text=Hola,%20adjunto%20mi%20comprobante%20de%20pago." target="_blank" class="whatsapp-btn">
-        <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem; margin-right: 5px;"></i>
-        Enviar Comprobante por WhatsApp (33 1833 3058)
-    </a>
     
-    <div style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #94A3B8;">
+    <div style="text-align: center; margin-top: 40px; font-size: 0.8rem; color: #94A3B8;">
         <p>* Cuentas sujetas a cambio sin previo aviso. Consulte frecuentemente.</p>
     </div>
 
 </div>
+
+<div id="copyToast"><i class="fa-solid fa-circle-check"></i> Copiado al portapapeles</div>
+
+<script>
+    function copiarAlPortapapeles(texto) {
+        // Usamos la API moderna de portapapeles
+        navigator.clipboard.writeText(texto).then(function() {
+            mostrarToast();
+        }, function(err) {
+            console.error('Error al copiar: ', err);
+            // Fallback para navegadores viejos (opcional)
+            alert("Copiado: " + texto);
+        });
+    }
+
+    function mostrarToast() {
+        var x = document.getElementById("copyToast");
+        x.className = "show";
+        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+    }
+</script>

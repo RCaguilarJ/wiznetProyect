@@ -1,3 +1,37 @@
+<?php
+if (!isset($conn)) {
+    if (file_exists("includes/conexion.php")) require_once "includes/conexion.php";
+    elseif (file_exists("../includes/conexion.php")) require_once "../includes/conexion.php";
+}
+
+if (!isset($_SESSION['usuario_id'])) {
+    echo "<script>window.location.href='index.php';</script>";
+    exit;
+}
+
+$id_usuario = $_SESSION['usuario_id'];
+$sql_cliente = "SELECT nombre, correo, telefono_1, telefono FROM clientes WHERE id = '$id_usuario' LIMIT 1";
+$sql = "SELECT nombre, correo, telefono_1, telefono_2 FROM clientes WHERE id = '$id_usuario' LIMIT 1";
+
+
+$res_cliente = $conn->query($sql);
+
+// 3. Ahora sí, en la línea 16 (aprox), PHP ya conoce la variable y no dará error
+$cliente = ($res_cliente && $res_cliente->num_rows > 0) ? $res_cliente->fetch_assoc() : [];
+
+$nombre_fijo = $cliente['nombre'] ?? ($_SESSION['nombre'] ?? 'Usuario');
+$correo_fijo = $cliente['correo'] ?? ($_SESSION['email'] ?? '');
+$telefono_fijo = $cliente['telefono_1'] ?? $cliente['telefono'] ?? '';
+
+if (!empty($correo_fijo)) {
+    $preferencia_fija = 'Correo Electronico';
+} elseif (!empty($telefono_fijo)) {
+    $preferencia_fija = 'Telefono';
+} else {
+    $preferencia_fija = 'Correo Electronico';
+}
+?>
+
 <style>
     /* Wrapper general */
     .contact-wrapper {
@@ -52,6 +86,12 @@
         color: #334155;
         width: 100%;
         box-sizing: border-box;
+    }
+    .input-locked {
+        background-color: #f1f5f9 !important;
+        color: #64748B !important;
+        cursor: not-allowed !important;
+        border: 1px solid #e2e8f0;
     }
     .form-control:focus { outline: none; border-color: #3B82F6; background-color: white; }
     .form-control::placeholder { color: #94A3B8; }
@@ -171,35 +211,35 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Nombre Completo *</label>
-                    <input type="text" class="form-control" placeholder="" value="">
+                    <input type="text" name="nombre" class="form-control input-locked" placeholder="" value="<?php echo htmlspecialchars($nombre_fijo); ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label>Correo Electrónico *</label>
-                    <input type="email" class="form-control" placeholder="" value="">
+                    <input type="email" name="correo" class="form-control input-locked" placeholder="" value="<?php echo htmlspecialchars($correo_fijo); ?>" readonly>
                 </div>
 
                 <div class="form-group">
                     <label>Teléfono *</label>
-                    <input type="tel" class="form-control" placeholder="8888-8888" value="8888-8888">
+                    <input type="tel" name="telefono" class="form-control input-locked" placeholder="8888-8888" value="<?php echo htmlspecialchars($telefono_fijo); ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label>Prefiere ser contactado por *</label>
-                    <select class="form-control">
-                        <option>Seleccione una opción</option>
-                        <option>Correo Electrónico</option>
-                        <option>Teléfono</option>
-                        <option>WhatsApp</option>
+                    <select class="form-control input-locked" name="preferencia_contacto" disabled>
+                        <option value="Correo Electronico" <?php echo ($preferencia_fija === 'Correo Electronico') ? 'selected' : ''; ?>>Correo Electrónico</option>
+                        <option value="Telefono" <?php echo ($preferencia_fija === 'Telefono') ? 'selected' : ''; ?>>Teléfono</option>
+                        <option value="WhatsApp" <?php echo ($preferencia_fija === 'WhatsApp') ? 'selected' : ''; ?>>WhatsApp</option>
                     </select>
+                    <input type="hidden" name="preferencia_contacto" value="<?php echo htmlspecialchars($preferencia_fija); ?>">
                 </div>
 
                 <div class="form-group full-width">
                     <label>Asunto *</label>
-                    <input type="text" class="form-control" placeholder="¿En qué podemos ayudarle?">
+                    <input type="text" name="asunto" class="form-control" placeholder="¿En qué podemos ayudarle?">
                 </div>
 
                 <div class="form-group full-width">
                     <label>Mensaje *</label>
-                    <textarea class="form-control" rows="4" placeholder="Escriba su mensaje aquí..."></textarea>
+                    <textarea name="mensaje" class="form-control" rows="4" placeholder="Escriba su mensaje aquí..."></textarea>
                 </div>
             </div>
 
@@ -223,7 +263,7 @@
                 <div class="icon-box bg-blue"><i class="fa-solid fa-phone"></i></div>
                 <div class="info-text">
                     <h5>Teléfono</h5>
-                    <p>2222-2222</p>
+                    <p>33 37 35 20 50</p>
                     <div class="small-note">Lunes a Domingo</div>
                 </div>
             </div>
@@ -232,7 +272,7 @@
                 <div class="icon-box bg-green"><i class="fa-brands fa-whatsapp"></i></div>
                 <div class="info-text">
                     <h5>WhatsApp</h5>
-                    <p>8888-8888</p>
+                    <p>33 1833 3058</p>
                     <div class="small-note">24/7</div>
                 </div>
             </div>
@@ -250,10 +290,13 @@
                 <div class="icon-box bg-orange"><i class="fa-solid fa-location-dot"></i></div>
                 <div class="info-text">
                     <h5>Dirección</h5>
-                    <p>Av. Principal #123</p>
+                    <p>16 de septiembre #117 Loc. Corralillos Mpio. Zapotlanejo Jalisco.</p>
                     <div class="small-note">San José, Costa Rica</div>
                 </div>
             </div>
+        </div>
+                <div>
+            
         </div>
 
         <div class="card-box" style="margin-bottom: 0;">
@@ -288,21 +331,7 @@
             </div>
         </div>
 
-        <div class="card-box" style="margin-bottom: 0;">
-            <h3 class="section-title">Síguenos</h3>
-            
-            <a href="#" class="social-btn">
-                Facebook: <span>@WiznetCR</span>
-            </a>
-            
-            <a href="#" class="social-btn">
-                Instagram: <span>@wiznet_cr</span>
-            </a>
-            
-            <a href="#" class="social-btn">
-                Twitter: <span>@WiznetCR</span>
-            </a>
-        </div>
+        
 
     </div>
 

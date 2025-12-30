@@ -21,6 +21,7 @@ $tel_fijo    = $cliente['telefono_1'] ?? '';
 
 // Preselección de plan desde URL
 $pre_plan = isset($_GET['plan']) ? $_GET['plan'] : '';
+$pre_tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
 
 
 // 2. PROCESAR SOLICITUD
@@ -95,19 +96,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" name="direccion" class="form-control" placeholder="Provincia, Cantón, Distrito y señas exactas" required>
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group">
+                    <label>Tipo de Plan *</label>
+                    <select name="tipo_plan" id="tipoPlan" class="form-control" onchange="filtrarPlanes()" required>
+                        <option value="residencial" selected>Residencial</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Plan de Interés *</label>
-                    <select name="plan_interes" id="planInteres" class="form-select" class="form-control" required>
+                    <select name="plan_interes" id="planInteres" class="form-control" required>
                         <option value="">Seleccione...</option>
-                        <optgroup label="Residencial">
+                        <optgroup label="Residencial" class="grupo-residencial">
                             <option value="Paq. Básico Residencial - 5 MB ($300)">Paq. Básico Residencial - 5 MB ($300)</option>
                             <option value="Paq. Medio Residencial - 7 MB ($400)">Paq. Medio Residencial - 7 MB ($400)</option>
                             <option value="Paq. Alto Residencial - 10 MB ($550)">Paq. Alto Residencial - 10 MB ($550)</option>
-                        </optgroup>
-                        <optgroup label="Comercial">
-                            <option value="Negocio Básico">Negocio Básico</option>
-                            <option value="Negocio Plus">Negocio Plus</option>
-                            <option value="Empresarial">Empresarial</option>
                         </optgroup>
                     </select>
                 </div>
@@ -123,13 +126,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 
 <script>
-    // Script simple para preseleccionar plan si viene de URL
+    // Filtrado simplificado (ya que solo hay residencial)
+    function filtrarPlanes() {
+        // En esta versión solo existe residencial, así que siempre mostramos el grupo
+        const grupoResidencial = document.querySelector('.grupo-residencial');
+        if(grupoResidencial) grupoResidencial.style.display = '';
+    }
+    
     window.addEventListener('DOMContentLoaded', () => {
+        filtrarPlanes();
         const planPre = "<?php echo $pre_plan; ?>";
+        
+        // Preselección inteligente basada en URL
         if(planPre) {
             const select = document.getElementById('planInteres');
-            // Mapeo simple de URL a valor del select
             let valorBuscar = "";
+            
+            // Mapeo simple de URL a valor del select
             if(planPre.includes("basico")) valorBuscar = "Básico";
             if(planPre.includes("medio")) valorBuscar = "Medio";
             if(planPre.includes("alto")) valorBuscar = "Alto";

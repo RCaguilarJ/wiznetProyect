@@ -23,9 +23,9 @@ if (is_readable($env_path)) {
     }
 }
 
-$default_host = "localhost";
-$default_user = "root";
-$default_pass = "";
+$default_host = "162.240.228.124";
+$default_user = "wiznet_wiznet";
+$default_pass = "YI13$~PNk@#z";
 $default_db   = "wiznet_wiznet";
 $default_port = "3306";
 
